@@ -109,9 +109,10 @@ PUBLIC_REPLACE = [
     ("Glidende snitt, målt", "Vekttrend, målt"),
     ("Glidende snitt", "Vekttrend"),
     ("Fem siste korrigerte målinger, per", "Snitt av fem siste målinger, per"),
+    ("Hule punkter har fått en korreksjon; tabellen under viser hvilken og om den er målt eller anslått.", "Hule punkter har fått en korreksjon."),
 ]
 PUBLIC_CSS = """<style>
-.vp-card:has(#tur-tabell), .vp-card:has(#bs-tabell), .vp-foot { display: none !important; }
+.vp-card:has(#tur-tabell), .vp-card:has(#bs-tabell), .vp-card:has(#vekt-tabell), .vp-foot { display: none !important; }
 </style>
 """
 
