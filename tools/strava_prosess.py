@@ -3,6 +3,9 @@
 
 Bruk:  python3 tools/strava_prosess.py <rådatamappe> <utmappe>
 
+Ligger det allerede strava_turer.csv/strava_splitter.csv i utmappen, beholdes radene for aktiviteter
+som ikke har strøm-/performancefiler i rådatamappen. Da trenger natt-jobben bare hente nye turer.
+
 Rådatamappen skal inneholde
   aktiviteter.json   – svaret fra Strava list_activities (objekt med "activities", eller en liste),
                        alle aktiviteter fra 2026-10-08
@@ -118,8 +121,19 @@ def splits(t, ds, a, v):
     return out
 
 
+def read_csv(p):
+    if not p.exists():
+        return []
+    with open(p, encoding="utf-8") as f:
+        return list(csv.reader(f))[1:]
+
+
 def main(raw, out):
     raw, out = pathlib.Path(raw), pathlib.Path(out)
+    old_tur = {r[2]: r for r in read_csv(out / "strava_turer.csv")}
+    old_spl = {}
+    for r in read_csv(out / "strava_splitter.csv"):
+        old_spl.setdefault(r[1], []).append(r)
     acts = json.loads((raw / "aktiviteter.json").read_text())
     acts = acts.get("activities", acts) if isinstance(acts, dict) else acts
     acts = sorted(acts, key=lambda x: x["start_local"])
@@ -130,6 +144,10 @@ def main(raw, out):
             continue
         dato, kl = act["start_local"][:10], act["start_local"][11:16]
         perf_p, str_p = raw / f"{aid}.perf.json", raw / f"{aid}.json"
+        if not perf_p.exists() and not str_p.exists() and aid in old_tur:
+            tur.append(old_tur[aid])
+            spl.extend(old_spl.get(aid, []))
+            continue
         perf = json.loads(perf_p.read_text()) if perf_p.exists() else {}
         km, mov, hm = s["distance"] / 1000, s["moving_time"], s.get("elevation_gain") or 0
         note = []
