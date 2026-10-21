@@ -77,7 +77,10 @@ window.dash = (function () {
 </head>
 <body>
 <div id="dash-root">
-<p class="vp-stamp">Sist oppdatert 21.10.2026 kl. 15:37 · oppdateres automatisk hver natt</p>
+<p class="vp-stamp">Sist oppdatert 21.10.2026 kl. 15:46 · oppdateres automatisk hver natt</p>
+<style>
+.vp-card:has(#tur-tabell), .vp-card:has(#bs-tabell) { display: none !important; }
+</style>
 <style>
 .vp { font-family: var(--font-anthropic-sans); color: var(--color-fg); max-width: 72rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--cds-gap-xl); }
 .vp h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; line-height: 1.2; }
@@ -149,15 +152,15 @@ window.dash = (function () {
 <div class="vp" id="topp">
   <header>
     <h1>Vektprogrammet</h1>
-    <p class="vp-take">Glidende snitt <b class="dash-skeleton" data-source="nokkeltall" data-field="siste_snitt_kg" data-row="0">—</b> kg – <b class="dash-skeleton" data-source="nokkeltall" data-field="ned_kg" data-row="0">—</b> kg ned fra første referansemåling, og <b class="dash-skeleton" data-source="nokkeltall" data-field="over_maal_kg" data-row="0">—</b> kg igjen til arbeidsmålet på 85 kg.</p>
+    <p class="vp-take">Vekttrend <b class="dash-skeleton" data-source="nokkeltall" data-field="siste_snitt_kg" data-row="0">—</b> kg – <b class="dash-skeleton" data-source="nokkeltall" data-field="ned_kg" data-row="0">—</b> kg ned fra første referansemåling, og <b class="dash-skeleton" data-source="nokkeltall" data-field="over_maal_kg" data-row="0">—</b> kg igjen til arbeidsmålet på 85 kg.</p>
     <p class="vp-meta">Logg <span class="dash-skeleton" data-source="nokkeltall" data-field="forste_dag" data-row="0">—</span>–<span class="dash-skeleton" data-source="nokkeltall" data-field="siste_dag" data-row="0">—</span>.2026 · Oppdateres automatisk hver natt</p>
   </header>
 
   <div class="vp-kpis" id="nokkeltall">
     <div class="vp-card vp-kpi" id="kpi-snitt">
-      <div class="lab">Glidende snitt</div>
+      <div class="lab">Vekttrend</div>
       <div class="num"><span class="dash-skeleton" data-source="nokkeltall" data-field="siste_snitt_kg" data-row="0">—</span> <small>kg</small></div>
-      <div class="sub">Fem siste korrigerte målinger, per <span class="dash-skeleton" data-source="nokkeltall" data-field="siste_snitt_dato" data-row="0">—</span></div>
+      <div class="sub">Snitt av fem siste målinger, per <span class="dash-skeleton" data-source="nokkeltall" data-field="siste_snitt_dato" data-row="0">—</span></div>
     </div>
     <div class="vp-card vp-kpi" id="kpi-endring">
       <div class="lab">Ned siden start</div>
@@ -185,10 +188,10 @@ window.dash = (function () {
     <h2>Vekt</h2>
     <div class="vp-stack">
       <div class="vp-card" id="vekt-kort">
-        <h3>Korrigert vekt og glidende snitt</h3>
-        <p class="vp-note">Hver veiing er korrigert til morgen, naken, etter toalett, før mat og drikke. Snittet tar de fem siste korrigerte målingene. Hule punkter har fått en korreksjon; tabellen under viser hvilken og om den er målt eller anslått. Dager uten veiing er ikke fylt inn.</p>
+        <h3>Vekt og vekttrend</h3>
+        <p class="vp-note">Hver veiing er korrigert til morgen, naken, etter toalett, før mat og drikke. Vekttrenden er snittet av de fem siste målingene. Hule punkter har fått en korreksjon; tabellen under viser hvilken og om den er målt eller anslått. Dager uten veiing er ikke fylt inn.</p>
         <div class="vp-legend">
-          <span><i class="vp-sw line" data-sw="0"></i>Glidende snitt</span>
+          <span><i class="vp-sw line" data-sw="0"></i>Vekttrend</span>
           <span><i class="vp-sw line" data-sw="1"></i>Like med like: naken, rett etter jogging, før kveldsmat (rå vekt)</span>
           <span><i class="vp-sw dot" data-sw="muted"></i><i class="vp-sw dot hollow" data-sw="muted"></i>Korrigerte målinger</span>
           <span><i class="vp-sw dash"></i>Arbeidsmål</span>
@@ -197,9 +200,9 @@ window.dash = (function () {
       </div>
       <div class="vp-card" id="prognose-kort">
         <h3>Framskrivning ned til 75 kg</h3>
-        <p class="vp-note">Anslag. Starter i siste glidende snitt og regner dag for dag med snittinntaket i loggen. Forbruket synker når vekten går ned: hvilestoffskiftet (Mifflin, 53 år, 178 cm) × 1,5 for aktivitet, altså ~15 kcal mindre per dag for hvert kilo. Midtlinjen bruker 7700 kcal per kg. Båndet går fra 7000 kcal per kg (raskere) til 7700 kcal per kg pluss 150 kcal tilpasning i forbruket (tregere). Linjen stilles mot faktisk takt etter hvert.</p>
+        <p class="vp-note">Anslag. Starter i siste vekttrend og regner dag for dag med snittinntaket i loggen. Forbruket synker når vekten går ned: hvilestoffskiftet (Mifflin, 53 år, 178 cm) × 1,5 for aktivitet, altså ~15 kcal mindre per dag for hvert kilo. Midtlinjen bruker 7700 kcal per kg. Båndet går fra 7000 kcal per kg (raskere) til 7700 kcal per kg pluss 150 kcal tilpasning i forbruket (tregere). Linjen stilles mot faktisk takt etter hvert.</p>
         <div class="vp-legend">
-          <span><i class="vp-sw line" data-sw="0"></i>Glidende snitt, målt</span>
+          <span><i class="vp-sw line" data-sw="0"></i>Vekttrend, målt</span>
           <span><i class="vp-sw dash" style="border-top-color:var(--sw)" data-sw="0"></i>Framskrivning, midt</span>
           <span><i class="vp-sw band" style="background:var(--sw)" data-sw="0"></i>Raskere til tregere</span>
         </div>
@@ -403,7 +406,7 @@ window.dash = (function () {
 
   dash.calc('snitt5', {
     inputs: ['vekt'],
-    title: 'Glidende snitt, 5 målinger',
+    title: 'Vekttrend, 5 målinger',
     description: 'Snittet av de fem siste korrigerte veiingene, regnet fra og med den femte korrigerte veiingen.',
     fn: (vekt) => {
       const k = vekt
@@ -737,7 +740,7 @@ window.dash = (function () {
       const cx = x(new Date(ms));
       rule.attr('x1', cx).attr('x2', cx).style('opacity', 1);
       const lines = [];
-      if (s) lines.push({ color: c0, name: 'Glidende snitt', value: f1(s.v) + ' kg' });
+      if (s) lines.push({ color: c0, name: 'Vekttrend', value: f1(s.v) + ' kg' });
       if (l) lines.push({ color: c1, name: 'Like med like, rå', value: f1(l.v) + ' kg' });
       if (k) {
         lines.push({ color: MUTED, hollow: k.k !== 0, name: 'Korrigert', value: (k.k !== 0 ? '~' : '') + f1(k.v) + ' kg' });
@@ -807,7 +810,7 @@ window.dash = (function () {
       const cx = x(new Date(ms));
       rule.attr('x1', cx).attr('x2', cx).style('opacity', 1);
       const lines = [];
-      if (s) lines.push({ color: c0, name: 'Glidende snitt, målt', value: f1(s.v) + ' kg' });
+      if (s) lines.push({ color: c0, name: 'Vekttrend, målt', value: f1(s.v) + ' kg' });
       if (f) {
         const v = (z) => (z == null ? 'under 75' : '~' + f1(z) + ' kg');
         lines.push({ name: 'Framskrivning, midt', value: v(f.m) });

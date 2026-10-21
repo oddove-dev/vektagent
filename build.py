@@ -100,8 +100,30 @@ __FRAGMENT__
 """
 
 
+# Tilpasninger for den offentlige siden (bestemt 21.10): ingen «glidende snitt»,
+# og ingen detaljlister for turer og blodsukker – grafene holder.
+PUBLIC_REPLACE = [
+    ("Korrigert vekt og glidende snitt", "Vekt og vekttrend"),
+    ("Snittet tar de fem siste korrigerte målingene.", "Vekttrenden er snittet av de fem siste målingene."),
+    ("Starter i siste glidende snitt", "Starter i siste vekttrend"),
+    ("Glidende snitt, målt", "Vekttrend, målt"),
+    ("Glidende snitt", "Vekttrend"),
+    ("Fem siste korrigerte målinger, per", "Snitt av fem siste målinger, per"),
+]
+PUBLIC_CSS = """<style>
+.vp-card:has(#tur-tabell), .vp-card:has(#bs-tabell) { display: none !important; }
+</style>
+"""
+
+
+def public(fragment):
+    for old, new in PUBLIC_REPLACE:
+        fragment = fragment.replace(old, new)
+    return PUBLIC_CSS + fragment
+
+
 def main():
-    fragment = (ROOT / "fragment.html").read_text(encoding="utf-8")
+    fragment = public((ROOT / "fragment.html").read_text(encoding="utf-8"))
     data = {}
     for name in DATASETS:
         p = ROOT / "data" / f"{name}.csv"
