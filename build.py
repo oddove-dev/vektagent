@@ -11,7 +11,7 @@ import pathlib
 import zoneinfo
 
 ROOT = pathlib.Path(__file__).resolve().parent
-DATASETS = ["vekt", "mat", "matkilder", "aktivitet", "livvidde", "blodsukker"]
+DATASETS = ["vekt", "mat", "matkilder", "aktivitet", "livvidde", "blodsukker", "strava_turer", "strava_splitter"]
 
 SHELL = """<!doctype html>
 <html lang="nb">
