@@ -221,28 +221,28 @@
       <div class="vp-kpis" id="bs-kpis">
         <div class="vp-card vp-kpi" id="bs-kpi-snitt">
           <div class="lab">Snitt, sensorkurven</div>
-          <div class="num"><span class="dash-skeleton" data-source="bs_nokkeltall" data-field="snitt_mg" data-row="0">—</span> <small>mg/dL</small></div>
-          <div class="sub">≈ <span class="dash-skeleton" data-source="bs_nokkeltall" data-field="snitt_mmol" data-row="0">—</span> mmol/L · uten feilmålinger</div>
+          <div class="num"><span class="dash-skeleton" data-source="bs_nokkeltall" data-field="snitt_mmol" data-row="0">—</span> <small>mmol/L</small></div>
+          <div class="sub">Uten feilmålinger · normalt for friske ~4–6</div>
         </div>
         <div class="vp-card vp-kpi" id="bs-kpi-maks">
           <div class="lab">Høyeste</div>
-          <div class="num"><span class="dash-skeleton" data-source="bs_nokkeltall" data-field="maks_mg" data-row="0">—</span> <small>mg/dL</small></div>
-          <div class="sub">Topp etter kveldsmaten · under 140 er normalt</div>
+          <div class="num"><span class="dash-skeleton" data-source="bs_nokkeltall" data-field="maks_mmol" data-row="0">—</span> <small>mmol/L</small></div>
+          <div class="sub">Under 7,8 er normalt etter et måltid</div>
         </div>
         <div class="vp-card vp-kpi" id="bs-kpi-min">
           <div class="lab">Laveste</div>
-          <div class="num"><span class="dash-skeleton" data-source="bs_nokkeltall" data-field="min_mg" data-row="0">—</span> <small>mg/dL</small></div>
+          <div class="num"><span class="dash-skeleton" data-source="bs_nokkeltall" data-field="min_mmol" data-row="0">—</span> <small>mmol/L</small></div>
           <div class="sub">Uten <span class="dash-skeleton" data-source="bs_nokkeltall" data-field="feil_n" data-row="0">—</span> trolige feilmålinger</div>
         </div>
       </div>
       <div class="vp-card" id="bs-kort">
-        <h3>Første kveld og natt med sensor, 20.–21.10</h3>
-        <p class="vp-note">Avlest fra skjermbildene dine, omtrentlig (±5 mg/dL). Hull betyr at sensoren mistet signalet eller viste under skalaen. Appens målområde 70–180 er laget for diabetikere; for friske er 70–140 vanlig, og 60-tallet om natten er ikke uvanlig på lite karbo.</p>
+        <h3>Sensorkurven</h3>
+        <p class="vp-note">Avlest fra skjermbildene dine, omtrentlig (±0,3 mmol/L). Hull betyr at sensoren mistet signalet eller viste under skalaen. Appens målområde 3,9–10,0 er laget for diabetikere; for friske er 3,9–7,8 vanlig, og 3,3–3,9 om natten er ikke uvanlig på lite karbo.</p>
         <div class="vp-legend">
           <span><i class="vp-sw line" data-sw="0"></i>Sensorkurve</span>
           <span><i class="vp-sw dot hollow" data-sw="muted"></i>Trolig trykkfall (lå på sensoren)</span>
-          <span><i class="vp-sw band"></i>Normalt for friske, 70–140</span>
-          <span><i class="vp-sw dash"></i>Lavt, 54</span>
+          <span><i class="vp-sw band"></i>Normalt for friske, 3,9–7,8</span>
+          <span><i class="vp-sw dash"></i>Lavt, 3,0</span>
         </div>
         <div class="vp-chart dash-skeleton" id="bs-graf" style="min-height:250px" data-source="blodsukker"></div>
       </div>
@@ -253,7 +253,6 @@
             <table class="wide" data-source="bs_nokkel" data-row-key="tid">
               <thead><tr>
                 <th data-field="tid">Tid</th>
-                <th class="num" data-field="mg_dl">mg/dL</th>
                 <th class="num" data-field="mmol_l">mmol/L</th>
                 <th data-field="kilde">Kilde</th>
                 <th data-field="merknad">Merknad</th>
@@ -485,17 +484,16 @@
   dash.calc('bs_nokkeltall', {
     inputs: ['blodsukker'],
     title: 'Blodsukker, nøkkeltall',
-    description: 'Snitt, høyeste og laveste verdi på sensorkurven uten punktene som er merket som trolig feilmåling, og antall slike punkter. mmol/L = mg/dL / 18.',
+    description: 'Snitt, høyeste og laveste verdi på sensorkurven i mmol/L (mg/dL / 18), uten punktene som er merket som trolig feilmåling, og antall slike punkter.',
     fn: (blodsukker) => {
       const kurve = blodsukker.filter((r) => r.kilde === 'CGM-kurve');
       const ok = kurve.filter((r) => r.kvalitet === 'ok').map((r) => Number(r.mg_dl));
       if (!ok.length) return [];
       const snitt = ok.reduce((a, b) => a + b, 0) / ok.length;
       return [{
-        snitt_mg: Math.round(snitt),
         snitt_mmol: Math.round((snitt / 18) * 10) / 10,
-        maks_mg: Math.max(...ok),
-        min_mg: Math.min(...ok),
+        maks_mmol: Math.round((Math.max(...ok) / 18) * 10) / 10,
+        min_mmol: Math.round((Math.min(...ok) / 18) * 10) / 10,
         feil_n: kurve.length - ok.length,
       }];
     },
@@ -950,7 +948,7 @@
   const pt = (s) => new Date(s + ':00Z');
   const fmtKl = d3.utcFormat('%H:%M');
   const fmtDagKl = (s) => s.slice(8, 10) + '.' + s.slice(5, 7) + ' kl. ' + s.slice(11, 16);
-  const BS_LO = 70, BS_HI = 140, BS_LAV = 54;
+  const BS_LO = 3.9, BS_HI = 7.8, BS_LAV = 3.0;
 
   function fillBsKpis() {
     const s = state(['bs_nokkeltall']);
@@ -958,9 +956,11 @@
     document.querySelectorAll('#bs-kpis [data-source="bs_nokkeltall"]').forEach((el) => {
       el.classList.toggle('dash-skeleton', s === 'loading');
       const v = k ? k[el.dataset.field] : null;
-      el.textContent = v == null ? '—' : (el.dataset.field === 'snitt_mmol' ? f1(v) : f0(v));
+      el.textContent = v == null ? '—' : (el.dataset.field.endsWith('_mmol') ? f1(v) : f0(v));
     });
   }
+
+  const bsLab = (m) => { const s = (m || '').split(/[(.–;]/)[0].trim(); return (s.charAt(0).toLowerCase() + s.slice(1)).slice(0, 34); };
 
   function drawBs() {
     const el = document.getElementById('bs-graf');
@@ -968,13 +968,13 @@
     if (!guard(el, ['blodsukker'])) return;
     const rows = dash.data('blodsukker').data
       .filter((r) => r.kilde === 'CGM-kurve')
-      .map((r) => ({ t: r.tid, d: pt(r.tid), v: Number(r.mg_dl), feil: r.kvalitet !== 'ok', nokkel: r.nokkel === 'ja' }))
+      .map((r) => ({ t: r.tid, d: pt(r.tid), v: Number(r.mg_dl) / 18, feil: r.kvalitet !== 'ok', nokkel: r.nokkel === 'ja', m: r.merknad || '' }))
       .sort((a, b) => a.d - b.d);
     if (!rows.length) { el.replaceChildren(); return; }
     const { W, svg, tip } = setup(el, H);
     const c0 = C()[0];
-    const lo = 30, hi = 150;
-    const yt = [40, 70, 100, 140];
+    const lo = 2, hi = 8.5;
+    const yt = [3, 4, 5, 6, 7, 8];
     const ml = textW(svg, yt.map(f0), 'vp-tick') + 12, mr = 8, mt = 10, mb = 26;
     const y = d3.scaleLinear([lo, hi], [H - mb, mt]);
     const x = d3.scaleUtc([rows[0].d, rows[rows.length - 1].d], [ml, W - mr]);
@@ -982,7 +982,7 @@
       .style('fill', 'var(--cds-chart-reference)').style('opacity', 0.14);
     yAxis(svg, y, yt, f0, ml, W - mr);
     svg.append('line').attr('class', 'vp-ref').attr('x1', ml).attr('x2', W - mr).attr('y1', y(BS_LAV)).attr('y2', y(BS_LAV));
-    svg.append('text').attr('class', 'vp-tick').attr('x', W - mr).attr('y', y(BS_LAV) - 5).attr('text-anchor', 'end').text('Lavt 54');
+    svg.append('text').attr('class', 'vp-tick').attr('x', W - mr).attr('y', y(BS_LAV) - 5).attr('text-anchor', 'end').text('Lavt 3,0');
     const lw = textW(svg, ['00:00'], 'vp-tick') + 18;
     const xt = x.ticks(d3.utcHour.every(Math.max(1, Math.ceil(((rows[rows.length - 1].d - rows[0].d) / 36e5) / Math.max(1, Math.floor((W - ml - mr) / lw))))));
     svg.append('g').selectAll('text').data(xt).join('text').attr('class', 'vp-tick')
@@ -1004,7 +1004,7 @@
       svg.append('circle').attr('class', 'vp-ring').attr('cx', x(r.d)).attr('cy', y(r.v)).attr('r', 4.5).style('fill', r.feil ? MUTED : c0);
       const right = x(r.d) > (ml + W - mr) / 2;
       svg.append('text').attr('class', 'vp-lab').attr('x', x(r.d) + (right ? -8 : 8)).attr('y', y(r.v) + (r.feil ? 4 : -8))
-        .attr('text-anchor', right ? 'end' : 'start').text(f0(r.v) + (r.feil ? ' – trolig trykkfall' : ' – topp etter kveldsmat'));
+        .attr('text-anchor', right ? 'end' : 'start').text(f1(r.v) + ' – ' + (r.feil ? 'trolig trykkfall' : bsLab(r.m)));
     }
     const rule = svg.append('line').attr('class', 'vp-rule').attr('y1', mt).attr('y2', H - mb).style('opacity', 0);
     const ov = svg.append('rect').attr('x', ml).attr('y', 0).attr('width', Math.max(0, W - ml - mr)).attr('height', H)
@@ -1014,8 +1014,7 @@
       const r = rows[d3.minIndex(rows, (p) => Math.abs(x(p.d) - px))];
       rule.attr('x1', x(r.d)).attr('x2', x(r.d)).style('opacity', 1);
       const lines = [
-        { color: r.feil ? MUTED : c0, hollow: r.feil, name: 'mg/dL', value: '~' + f0(r.v) },
-        { name: 'mmol/L', value: '~' + f1(r.v / 18) },
+        { color: r.feil ? MUTED : c0, hollow: r.feil, name: 'mmol/L', value: '~' + f1(r.v) },
       ];
       if (r.feil) lines.push({ note: true, name: 'Trolig trykkfall (feilmåling)' });
       showTip(tip, el, x(r.d), fmtDagKl(r.t), lines);
@@ -1031,10 +1030,10 @@
     for (const r of dash.data('bs_nokkel').data) {
       const tr = document.createElement('tr');
       tr.dataset.key = r.tid;
-      const cells = [fmtDagKl(r.tid), f0(r.mg_dl), f1(r.mmol_l), r.kilde, r.merknad || ''];
+      const cells = [fmtDagKl(r.tid), f1(r.mmol_l), r.kilde, r.merknad || ''];
       cells.forEach((c, i) => {
         const td = document.createElement('td');
-        if (i === 1 || i === 2) td.className = 'num';
+        if (i === 1) td.className = 'num';
         td.textContent = c;
         tr.append(td);
       });
