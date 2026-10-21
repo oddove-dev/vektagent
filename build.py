@@ -111,7 +111,7 @@ PUBLIC_REPLACE = [
     ("Fem siste korrigerte målinger, per", "Snitt av fem siste målinger, per"),
 ]
 PUBLIC_CSS = """<style>
-.vp-card:has(#tur-tabell), .vp-card:has(#bs-tabell) { display: none !important; }
+.vp-card:has(#tur-tabell), .vp-card:has(#bs-tabell), .vp-foot { display: none !important; }
 </style>
 """
 
