@@ -1,0 +1,1145 @@
+<style>
+.vp { font-family: var(--font-anthropic-sans); color: var(--color-fg); max-width: 72rem; margin-inline: auto; display: flex; flex-direction: column; gap: var(--cds-gap-xl); }
+.vp h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; line-height: 1.2; }
+.vp h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-sm); }
+.vp h3 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.vp-take { margin: var(--cds-gap-xs) 0 0; font-size: var(--cds-font-size-body); line-height: 1.5; }
+.vp-meta, .vp-note, .vp-foot { margin: var(--cds-gap-xs) 0 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
+.vp-foot { margin: 0; }
+.vp .vp-take b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+.vp-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: var(--cds-gap-md); }
+.vp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--cds-gap-md); }
+.vp-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+.vp-stack { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.vp-kpi .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.vp-kpi .num { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; margin-top: var(--cds-gap-xs); line-height: 1.15; }
+.vp-kpi .num small { font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); color: var(--color-fg-muted); }
+.vp-kpi .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-xs); line-height: 1.4; font-variant-numeric: tabular-nums; }
+.vp-kpi .good { color: var(--color-ok); }
+.vp-kpi [data-dash-source-state=empty] { color: transparent; }
+.vp [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.vp-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-sm) 0; }
+.vp-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.vp-sw { display: inline-block; flex: none; box-sizing: border-box; }
+.vp-sw.line { width: 14px; height: 2px; border-radius: 1px; background: var(--sw); }
+.vp-sw.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--sw); border: 1.5px solid var(--sw); }
+.vp-sw.hollow { background: transparent; }
+.vp-sw.bar { width: 10px; height: 10px; border-radius: 2px; background: var(--sw); }
+.vp-sw.light { opacity: .45; outline: 1px solid var(--sw); outline-offset: -1px; }
+.vp-sw.dash { width: 14px; height: 0; border-top: 1.5px dashed var(--cds-chart-reference); }
+.vp-sw.band { width: 12px; height: 10px; border-radius: 2px; background: var(--cds-chart-reference); opacity: .3; }
+.vp-chart { position: relative; }
+.vp-chart svg { display: block; overflow: visible; }
+.vp-chart svg text { font-family: var(--font-anthropic-sans); }
+.vp .vp-tick { font-size: var(--cds-font-size-caption); fill: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.vp .vp-lab { font-size: var(--cds-font-size-caption); fill: var(--color-fg); font-variant-numeric: tabular-nums; }
+.vp-grid-line { stroke: var(--cds-chart-grid); stroke-width: 1; shape-rendering: crispEdges; }
+.vp-axis { stroke: var(--cds-chart-axis); stroke-width: 1; shape-rendering: crispEdges; }
+.vp-ref { stroke: var(--cds-chart-reference); stroke-width: 1.5; stroke-dasharray: 4 4; fill: none; }
+.vp-rule { stroke: var(--cds-chart-reference); stroke-width: 1; pointer-events: none; }
+.vp-line { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.vp-ring { stroke: var(--color-panel); stroke-width: 2; }
+.vp-tip { position: absolute; display: none; z-index: 3; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg); max-width: min(17rem, 85%); font-variant-numeric: tabular-nums; }
+.vp-tip-t { color: var(--cds-text-secondary); margin-bottom: 2px; }
+.vp-tip-r { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.vp-tip-r b { margin-left: auto; padding-left: var(--cds-gap-sm); font-weight: var(--cds-font-weight-medium); }
+.vp-tip-m { color: var(--color-fg-muted); line-height: 1.35; margin-top: 2px; }
+.vp-tip-sw { width: 8px; height: 8px; border-radius: 50%; flex: none; box-sizing: border-box; background: var(--sw); border: 1.5px solid var(--sw); }
+.vp-tip-sw.hollow { background: transparent; }
+.vp-fail { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.vp-fail-dot { width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.vp details > summary { cursor: pointer; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.vp-tablebox { max-height: 26rem; overflow: auto; margin-top: var(--cds-gap-sm); }
+.vp table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.vp table.wide { min-width: 36rem; }
+.vp-pies { margin-top: var(--cds-gap-md); gap: var(--cds-gap-xl); }
+.vp-pieblock { display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+.vp h4 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); margin: 0; }
+.vp-pie-tab th { position: static; }
+.vp-pie-tab td { font-size: var(--cds-font-size-body); }
+.vp-pie-tab .kl { display: inline-flex; align-items: center; gap: 8px; }
+.vp-pie-tab tr { cursor: default; }
+.vp-pie-tab tr.on td { font-weight: var(--cds-font-weight-medium); }
+.vp th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm) var(--cds-pad-xs) 0; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.vp td { padding: var(--cds-pad-xs) var(--cds-pad-sm) var(--cds-pad-xs) 0; border-bottom: 1px solid var(--color-border-line); vertical-align: top; line-height: 1.4; }
+.vp th.num, .vp td.num { text-align: right; }
+.vp tr.muted td { color: var(--color-fg-muted); }
+</style>
+
+<div class="vp" id="topp">
+  <header>
+    <h1>Vektprogrammet</h1>
+    <p class="vp-take">Glidende snitt <b class="dash-skeleton" data-source="nokkeltall" data-field="siste_snitt_kg" data-row="0">—</b> kg – <b class="dash-skeleton" data-source="nokkeltall" data-field="ned_kg" data-row="0">—</b> kg ned fra første referansemåling, og <b class="dash-skeleton" data-source="nokkeltall" data-field="over_maal_kg" data-row="0">—</b> kg igjen til arbeidsmålet på 85 kg.</p>
+    <p class="vp-meta">Logg <span class="dash-skeleton" data-source="nokkeltall" data-field="forste_dag" data-row="0">—</span>–<span class="dash-skeleton" data-source="nokkeltall" data-field="siste_dag" data-row="0">—</span>.2026 · Oppdateres automatisk hver natt</p>
+  </header>
+
+  <div class="vp-kpis" id="nokkeltall">
+    <div class="vp-card vp-kpi" id="kpi-snitt">
+      <div class="lab">Glidende snitt</div>
+      <div class="num"><span class="dash-skeleton" data-source="nokkeltall" data-field="siste_snitt_kg" data-row="0">—</span> <small>kg</small></div>
+      <div class="sub">Fem siste korrigerte målinger, per <span class="dash-skeleton" data-source="nokkeltall" data-field="siste_snitt_dato" data-row="0">—</span></div>
+    </div>
+    <div class="vp-card vp-kpi" id="kpi-endring">
+      <div class="lab">Ned siden start</div>
+      <div class="num"><span class="dash-skeleton" data-source="nokkeltall" data-field="ned_kg" data-row="0">—</span> <small>kg</small></div>
+      <div class="sub">Snittet mot første referansemåling, <span class="dash-skeleton" data-source="nokkeltall" data-field="start_kg" data-row="0">—</span> kg <span class="dash-skeleton" data-source="nokkeltall" data-field="start_dato" data-row="0">—</span></div>
+    </div>
+    <div class="vp-card vp-kpi" id="kpi-kcal">
+      <div class="lab">Snitt kcal per dag</div>
+      <div class="num">~<span class="dash-skeleton" data-source="nokkeltall" data-field="kcal_snitt" data-row="0">—</span></div>
+      <div class="sub"><span class="dash-skeleton" data-source="nokkeltall" data-field="dager" data-row="0">—</span> dager · mål 1450 · anslag</div>
+    </div>
+    <div class="vp-card vp-kpi" id="kpi-protein">
+      <div class="lab">Snitt protein per dag</div>
+      <div class="num">~<span class="dash-skeleton" data-source="nokkeltall" data-field="protein_snitt" data-row="0">—</span> <small>g</small></div>
+      <div class="sub">Mål 110–130 g · anslag</div>
+    </div>
+    <div class="vp-card vp-kpi" id="kpi-jogg">
+      <div class="lab">Joggeturer</div>
+      <div class="num"><span class="dash-skeleton" data-source="nokkeltall" data-field="jogg_turer" data-row="0">—</span> <small>turer</small></div>
+      <div class="sub"><span class="dash-skeleton" data-source="nokkeltall" data-field="jogg_km" data-row="0">—</span> km · i tillegg <span class="dash-skeleton" data-source="nokkeltall" data-field="gaa_turer" data-row="0">—</span> gåturer, <span class="dash-skeleton" data-source="nokkeltall" data-field="gaa_km" data-row="0">—</span> km</div>
+    </div>
+  </div>
+
+  <section id="vekt">
+    <h2>Vekt</h2>
+    <div class="vp-stack">
+      <div class="vp-card" id="vekt-kort">
+        <h3>Korrigert vekt og glidende snitt</h3>
+        <p class="vp-note">Hver veiing er korrigert til morgen, naken, etter toalett, før mat og drikke. Snittet tar de fem siste korrigerte målingene. Hule punkter har fått en korreksjon; tabellen under viser hvilken og om den er målt eller anslått. Dager uten veiing er ikke fylt inn.</p>
+        <div class="vp-legend">
+          <span><i class="vp-sw line" data-sw="0"></i>Glidende snitt</span>
+          <span><i class="vp-sw line" data-sw="1"></i>Like med like: naken, rett etter jogging, før kveldsmat (rå vekt)</span>
+          <span><i class="vp-sw dot" data-sw="muted"></i><i class="vp-sw dot hollow" data-sw="muted"></i>Korrigerte målinger</span>
+          <span><i class="vp-sw dash"></i>Arbeidsmål</span>
+        </div>
+        <div class="vp-chart dash-skeleton" id="vekt-graf" style="min-height:260px" data-source="vekt snitt5"></div>
+      </div>
+      <div class="vp-card" id="prognose-kort">
+        <h3>Framskrivning ned til 75 kg</h3>
+        <p class="vp-note">Anslag. Starter i siste glidende snitt og regner dag for dag med snittinntaket i loggen. Forbruket synker når vekten går ned: hvilestoffskiftet (Mifflin, 53 år, 178 cm) × 1,5 for aktivitet, altså ~15 kcal mindre per dag for hvert kilo. Midtlinjen bruker 7700 kcal per kg. Båndet går fra 7000 kcal per kg (raskere) til 7700 kcal per kg pluss 150 kcal tilpasning i forbruket (tregere). Linjen stilles mot faktisk takt etter hvert.</p>
+        <div class="vp-legend">
+          <span><i class="vp-sw line" data-sw="0"></i>Glidende snitt, målt</span>
+          <span><i class="vp-sw dash" style="border-top-color:var(--sw)" data-sw="0"></i>Framskrivning, midt</span>
+          <span><i class="vp-sw band" style="background:var(--sw)" data-sw="0"></i>Raskere til tregere</span>
+        </div>
+        <div class="vp-chart dash-skeleton" id="prognose-graf" style="min-height:260px" data-source="snitt5 framskriving"></div>
+        <div class="vp-tablebox">
+          <table data-source="milepaeler" data-row-key="maal_kg">
+            <thead><tr>
+              <th data-field="maal_kg">Vekt</th>
+              <th class="num" data-field="rask">Raskere</th>
+              <th class="num" data-field="midt">Midt</th>
+              <th class="num" data-field="treg">Tregere</th>
+            </tr></thead>
+            <tbody id="prognose-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="vp-card">
+        <details id="vekt-tabell">
+          <summary>Alle veiinger</summary>
+          <div class="vp-tablebox">
+            <table class="wide" data-source="vekt" data-row-key="dato">
+              <thead><tr>
+                <th data-field="dato">Dato</th>
+                <th class="num" data-field="raa_kg">Rå, kg</th>
+                <th class="num" data-field="korrigert_kg">Korrigert, kg</th>
+                <th class="num" data-field="korreksjon_kg">Korreksjon</th>
+                <th data-field="korreksjon_grunnlag">Grunnlag</th>
+                <th data-field="betingelse">Betingelse</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="mat">
+    <h2>Mat</h2>
+    <div class="vp-stack">
+      <div class="vp-grid">
+        <div class="vp-card" id="kcal-kort">
+          <h3>Kcal per dag</h3>
+          <p class="vp-note">Alle tall er anslag. Dagsmålet er et sikte, ikke et tak.</p>
+          <div class="vp-legend">
+            <span><i class="vp-sw bar" data-sw="0"></i>kcal</span>
+            <span><i class="vp-sw bar light" data-sw="0"></i>Ekstra usikkert anslag</span>
+            <span><i class="vp-sw dash"></i>Dagsmål 1450</span>
+          </div>
+          <div class="vp-chart dash-skeleton" id="kcal-graf" style="min-height:210px" data-source="mat"></div>
+        </div>
+        <div class="vp-card" id="protein-kort">
+          <h3>Protein per dag</h3>
+          <p class="vp-note">Alle tall er anslag.</p>
+          <div class="vp-legend">
+            <span><i class="vp-sw bar" data-sw="0"></i>Protein, g</span>
+            <span><i class="vp-sw bar light" data-sw="0"></i>Ekstra usikkert anslag</span>
+            <span><i class="vp-sw band"></i>Mål 110–130 g</span>
+          </div>
+          <div class="vp-chart dash-skeleton" id="protein-graf" style="min-height:210px" data-source="mat"></div>
+        </div>
+      </div>
+      <div class="vp-card" id="kilder-kort">
+        <h3>Hvor kaloriene og proteinet kommer fra</h3>
+        <p class="vp-note">Alle <span class="dash-skeleton" data-source="kilder" data-field="dager" data-row="0">—</span> dagene i loggen samlet. Anslag: programmaten er regnet med faste verdier fra matnotatene, kantineretter med tall fra loggen, eller resten av dagssummen der loggen ikke har tall for retten. Annet = avvik, grønnsaker og lyr.</p>
+        <div class="vp-grid vp-pies">
+          <div class="vp-pieblock" id="kilder-kcal">
+            <h4>Kcal</h4>
+            <div class="vp-chart dash-skeleton" id="kilder-kcal-graf" style="min-height:230px" data-source="kilder"></div>
+            <table class="vp-pie-tab" data-source="kilder" data-row-key="kilde">
+              <thead><tr>
+                <th data-field="kilde">Kilde</th>
+                <th class="num" data-field="andel_pst">Andel</th>
+                <th class="num" data-field="kcal_per_dag">kcal per dag</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="vp-pieblock" id="kilder-protein">
+            <h4>Protein</h4>
+            <div class="vp-chart dash-skeleton" id="kilder-protein-graf" style="min-height:230px" data-source="kilder"></div>
+            <table class="vp-pie-tab" data-source="kilder" data-row-key="kilde">
+              <thead><tr>
+                <th data-field="kilde">Kilde</th>
+                <th class="num" data-field="andel_protein_pst">Andel</th>
+                <th class="num" data-field="protein_per_dag">g per dag</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="blodsukker">
+    <h2>Blodsukker</h2>
+    <div class="vp-stack">
+      <div class="vp-kpis" id="bs-kpis">
+        <div class="vp-card vp-kpi" id="bs-kpi-snitt">
+          <div class="lab">Snitt, sensorkurven</div>
+          <div class="num"><span class="dash-skeleton" data-source="bs_nokkeltall" data-field="snitt_mg" data-row="0">—</span> <small>mg/dL</small></div>
+          <div class="sub">≈ <span class="dash-skeleton" data-source="bs_nokkeltall" data-field="snitt_mmol" data-row="0">—</span> mmol/L · uten feilmålinger</div>
+        </div>
+        <div class="vp-card vp-kpi" id="bs-kpi-maks">
+          <div class="lab">Høyeste</div>
+          <div class="num"><span class="dash-skeleton" data-source="bs_nokkeltall" data-field="maks_mg" data-row="0">—</span> <small>mg/dL</small></div>
+          <div class="sub">Topp etter kveldsmaten · under 140 er normalt</div>
+        </div>
+        <div class="vp-card vp-kpi" id="bs-kpi-min">
+          <div class="lab">Laveste</div>
+          <div class="num"><span class="dash-skeleton" data-source="bs_nokkeltall" data-field="min_mg" data-row="0">—</span> <small>mg/dL</small></div>
+          <div class="sub">Uten <span class="dash-skeleton" data-source="bs_nokkeltall" data-field="feil_n" data-row="0">—</span> trolige feilmålinger</div>
+        </div>
+      </div>
+      <div class="vp-card" id="bs-kort">
+        <h3>Første kveld og natt med sensor, 20.–21.10</h3>
+        <p class="vp-note">Avlest fra skjermbildene dine, omtrentlig (±5 mg/dL). Hull betyr at sensoren mistet signalet eller viste under skalaen. Appens målområde 70–180 er laget for diabetikere; for friske er 70–140 vanlig, og 60-tallet om natten er ikke uvanlig på lite karbo.</p>
+        <div class="vp-legend">
+          <span><i class="vp-sw line" data-sw="0"></i>Sensorkurve</span>
+          <span><i class="vp-sw dot hollow" data-sw="muted"></i>Trolig trykkfall (lå på sensoren)</span>
+          <span><i class="vp-sw band"></i>Normalt for friske, 70–140</span>
+          <span><i class="vp-sw dash"></i>Lavt, 54</span>
+        </div>
+        <div class="vp-chart dash-skeleton" id="bs-graf" style="min-height:250px" data-source="blodsukker"></div>
+      </div>
+      <div class="vp-card">
+        <details id="bs-tabell" open>
+          <summary>Nøkkelmålinger</summary>
+          <div class="vp-tablebox">
+            <table class="wide" data-source="bs_nokkel" data-row-key="tid">
+              <thead><tr>
+                <th data-field="tid">Tid</th>
+                <th class="num" data-field="mg_dl">mg/dL</th>
+                <th class="num" data-field="mmol_l">mmol/L</th>
+                <th data-field="kilde">Kilde</th>
+                <th data-field="merknad">Merknad</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="trening">
+    <h2>Trening</h2>
+    <div class="vp-stack">
+      <div class="vp-card" id="tur-kort">
+        <h3>Snitt per km og turer</h3>
+        <p class="vp-note">Snitt per km på 5,28 km-løypa, for turene der tiden er ført i loggen. Lavere er raskere. Stripen nederst viser hver dag.</p>
+        <div class="vp-legend">
+          <span><i class="vp-sw line" data-sw="0"></i>Snitt per km</span>
+          <span><i class="vp-sw bar" data-sw="0"></i>Joggetur</span>
+          <span><i class="vp-sw bar" data-sw="muted"></i>Gåtur</span>
+        </div>
+        <div class="vp-chart dash-skeleton" id="tur-graf" style="min-height:250px" data-source="aktivitet"></div>
+      </div>
+      <div class="vp-card">
+        <details id="tur-tabell" open>
+          <summary>Alle turer</summary>
+          <p class="vp-note">– betyr at det ikke står i loggen.</p>
+          <div class="vp-tablebox">
+            <table class="wide" data-source="aktivitet" data-row-key="dato">
+              <thead><tr>
+                <th data-field="dato">Dato</th>
+                <th data-field="type">Tur</th>
+                <th class="num" data-field="km">Km</th>
+                <th class="num" data-field="tid">Tid</th>
+                <th class="num" data-field="snitt_per_km">Snitt/km</th>
+                <th data-field="merknad">Merknad</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="livvidde">
+    <h2>Livvidde</h2>
+    <div class="vp-card" id="liv-kort">
+      <h3>Livvidde i navlehøyde</h3>
+      <p class="vp-note">Måles hver 14. dag med avslappet mage. Siste måling <span class="dash-skeleton" data-source="nokkeltall" data-field="livvidde_cm" data-row="0">—</span> cm, <span class="dash-skeleton" data-source="nokkeltall" data-field="livvidde_endring_cm" data-row="0">—</span> cm siden <span class="dash-skeleton" data-source="nokkeltall" data-field="livvidde_forste_dato" data-row="0">—</span>.</p>
+      <div class="vp-legend">
+        <span><i class="vp-sw line" data-sw="0"></i>Livvidde, cm</span>
+        <span><i class="vp-sw dash"></i>Halve høyden, 89 cm</span>
+      </div>
+      <div class="vp-chart dash-skeleton" id="liv-graf" style="min-height:210px" data-source="livvidde"></div>
+    </div>
+  </section>
+
+  <p class="vp-foot">Kilder: Vektlogg – Odd Egil, 03-maling.md, 04-helse.md og 06-status.md. Blodsukkerkurven er avlest fra skjermbilder fra sensorappen og er omtrentlig. Alle kcal- og proteintall er anslag. Korreksjonen etter jogging (+0,9 kg) er målt én gang og revidert 20.10; korreksjonene for morgen før toalett (−0,3 kg) og kveld før måltid er anslag.</p>
+</div>
+
+<script>
+(() => {
+  const MAAL_KG = 85, MAAL_KCAL = 1450, PROT_LO = 110, PROT_HI = 130, LIV_REF = 89;
+
+  dash.calc('snitt5', {
+    inputs: ['vekt'],
+    title: 'Glidende snitt, 5 målinger',
+    description: 'Snittet av de fem siste korrigerte veiingene, regnet fra og med den femte korrigerte veiingen.',
+    fn: (vekt) => {
+      const k = vekt
+        .filter((r) => r.korrigert_kg !== '' && r.korrigert_kg != null)
+        .map((r) => ({ dato: r.dato, kg: Number(r.korrigert_kg) }))
+        .sort((a, b) => (a.dato < b.dato ? -1 : 1));
+      const ut = [];
+      for (let i = 4; i < k.length; i++) {
+        const fem = k.slice(i - 4, i + 1);
+        ut.push({ dato: k[i].dato, snitt_kg: Math.round((fem.reduce((s, r) => s + r.kg, 0) / 5) * 100) / 100 });
+      }
+      return ut;
+    },
+  });
+
+  dash.calc('framskriving', {
+    inputs: ['snitt5', 'mat'],
+    title: 'Framskrivning til 75 kg',
+    description: 'Fra siste glidende snitt, dag for dag: forbruk = 1,5 × Mifflin-hvilestoffskifte (53 år, 178 cm) ved dagens vekt, minus snittinntaket i loggen; underskuddet deles på 7700 kcal/kg (midt), 7000 (raskere) eller 7700 med 150 kcal tilpasning (tregere). Anslag.',
+    fn: (snitt5, mat) => {
+      const s = snitt5.slice().sort((a, b) => (a.dato < b.dato ? -1 : 1));
+      const start = s[s.length - 1];
+      const inntak = mat.reduce((t, r) => t + Number(r.kcal), 0) / mat.length;
+      const tdee = (w) => 1.5 * (10 * w + 6.25 * 178 - 5 * 53 + 5);
+      const v = [
+        { k: 'midt_kg', e: 7700, a: 0 },
+        { k: 'rask_kg', e: 7000, a: 0 },
+        { k: 'treg_kg', e: 7700, a: 150 },
+      ];
+      const w = v.map(() => Number(start.snitt_kg));
+      const d0 = Date.parse(start.dato + 'T00:00:00Z');
+      const ut = [];
+      for (let i = 0; i <= 400; i++) {
+        const rad = { dato: new Date(d0 + i * 864e5).toISOString().slice(0, 10) };
+        v.forEach((x, j) => { rad[x.k] = w[j] >= 75 ? Math.round(w[j] * 100) / 100 : null; });
+        ut.push(rad);
+        if (w.every((x) => x < 75)) break;
+        v.forEach((x, j) => { if (w[j] >= 75) w[j] -= (tdee(w[j]) - x.a - inntak) / x.e; });
+      }
+      return ut;
+    },
+  });
+
+  dash.calc('milepaeler', {
+    inputs: ['framskriving'],
+    title: 'Når 85, 80 og 75 kg nås',
+    description: 'Første dag hver framskrivning er under 85, 80 og 75 kg. Anslag.',
+    fn: (framskriving) => {
+      const forst = (k, m) => { const r = framskriving.find((x) => x[k] == null || x[k] < m); return r ? r.dato : null; };
+      return [85, 80, 75].map((m) => ({ maal_kg: m, rask: forst('rask_kg', m), midt: forst('midt_kg', m), treg: forst('treg_kg', m) }));
+    },
+  });
+
+  dash.calc('nokkeltall', {
+    inputs: ['snitt5', 'vekt', 'mat', 'aktivitet', 'livvidde'],
+    title: 'Nøkkeltall',
+    description: 'Siste glidende snitt, nedgang fra første korrigerte veiing, snitt kcal og protein per dag, turer og km, og endring i livvidde. Arbeidsmålet 85 kg er fast.',
+    fn: (snitt5, vekt, mat, aktivitet, livvidde) => {
+      const r1 = (x) => Math.round(x * 10) / 10;
+      const dd = (iso) => iso.slice(8, 10) + '.' + iso.slice(5, 7);
+      const sum = (rows, f) => rows.reduce((s, r) => s + Number(r[f]), 0);
+      const siste = snitt5[snitt5.length - 1];
+      const start = vekt.filter((r) => r.korrigert_kg !== '' && r.korrigert_kg != null).sort((a, b) => (a.dato < b.dato ? -1 : 1))[0];
+      const dager = mat.slice().sort((a, b) => (a.dato < b.dato ? -1 : 1));
+      const jogg = aktivitet.filter((r) => r.type === 'Jogging');
+      const gaa = aktivitet.filter((r) => r.type === 'Gåtur');
+      const liv = livvidde.slice().sort((a, b) => (a.dato < b.dato ? -1 : 1));
+      return [{
+        siste_snitt_kg: r1(siste.snitt_kg),
+        siste_snitt_dato: dd(siste.dato),
+        start_kg: Number(start.korrigert_kg),
+        start_dato: dd(start.dato),
+        ned_kg: r1(Number(start.korrigert_kg) - siste.snitt_kg),
+        over_maal_kg: r1(siste.snitt_kg - 85),
+        kcal_snitt: Math.round(sum(mat, 'kcal') / mat.length / 10) * 10,
+        protein_snitt: Math.round(sum(mat, 'protein_g') / mat.length),
+        dager: mat.length,
+        forste_dag: dd(dager[0].dato),
+        siste_dag: dd(dager[dager.length - 1].dato),
+        jogg_turer: jogg.length,
+        jogg_km: r1(sum(jogg, 'km')),
+        gaa_turer: gaa.length,
+        gaa_km: r1(sum(gaa, 'km')),
+        livvidde_cm: Number(liv[liv.length - 1].cm),
+        livvidde_endring_cm: r1(Number(liv[liv.length - 1].cm) - Number(liv[0].cm)),
+        livvidde_forste_dato: dd(liv[0].dato),
+      }];
+    },
+  });
+
+  dash.calc('kilder', {
+    inputs: ['matkilder'],
+    title: 'Kcal og protein per matkilde',
+    description: 'Summerer anslått kcal og protein per matkilde over alle dager i loggen: andel av totalen, snitt per dag og antall ganger kilden er spist. Annet står sist.',
+    fn: (matkilder) => {
+      const dager = new Set(matkilder.map((r) => r.dato)).size;
+      const k = new Map();
+      for (const r of matkilder) {
+        const s = k.get(r.kilde) || { kcal: 0, prot: 0, n: 0 };
+        s.kcal += Number(r.kcal); s.prot += Number(r.protein_g); s.n += 1;
+        k.set(r.kilde, s);
+      }
+      const totK = [...k.values()].reduce((a, s) => a + s.kcal, 0);
+      const totP = [...k.values()].reduce((a, s) => a + s.prot, 0);
+      return [...k].map(([kilde, s]) => ({
+        kilde,
+        kcal: Math.round(s.kcal),
+        andel_pst: Math.round((s.kcal / totK) * 1000) / 10,
+        kcal_per_dag: Math.round(s.kcal / dager),
+        protein_g: Math.round(s.prot),
+        andel_protein_pst: Math.round((s.prot / totP) * 1000) / 10,
+        protein_per_dag: Math.round((s.prot / dager) * 10) / 10,
+        ganger: s.n,
+        dager,
+      })).sort((a, b) => (a.kilde === 'Annet') - (b.kilde === 'Annet') || b.kcal - a.kcal);
+    },
+  });
+
+  dash.calc('bs_nokkeltall', {
+    inputs: ['blodsukker'],
+    title: 'Blodsukker, nøkkeltall',
+    description: 'Snitt, høyeste og laveste verdi på sensorkurven uten punktene som er merket som trolig feilmåling, og antall slike punkter. mmol/L = mg/dL / 18.',
+    fn: (blodsukker) => {
+      const kurve = blodsukker.filter((r) => r.kilde === 'CGM-kurve');
+      const ok = kurve.filter((r) => r.kvalitet === 'ok').map((r) => Number(r.mg_dl));
+      if (!ok.length) return [];
+      const snitt = ok.reduce((a, b) => a + b, 0) / ok.length;
+      return [{
+        snitt_mg: Math.round(snitt),
+        snitt_mmol: Math.round((snitt / 18) * 10) / 10,
+        maks_mg: Math.max(...ok),
+        min_mg: Math.min(...ok),
+        feil_n: kurve.length - ok.length,
+      }];
+    },
+  });
+
+  dash.calc('bs_nokkel', {
+    inputs: ['blodsukker'],
+    title: 'Blodsukker, nøkkelmålinger',
+    description: 'Målingene som er merket som nøkkelmålinger, nyeste først, med mmol/L regnet som mg/dL / 18.',
+    fn: (blodsukker) => blodsukker
+      .filter((r) => r.nokkel === 'ja')
+      .map((r) => ({ tid: r.tid, mg_dl: Number(r.mg_dl), mmol_l: Math.round((Number(r.mg_dl) / 18) * 10) / 10, kilde: r.kilde, merknad: r.merknad }))
+      .sort((a, b) => (a.tid < b.tid ? 1 : -1)),
+  });
+
+  const nb = d3.formatLocale({ decimal: ',', thousands: ' ', grouping: [3], currency: ['', ''] });
+  const f0 = nb.format('d'), f1 = nb.format('.1f'), f2 = nb.format('.2~f'), fs1 = nb.format('+.1f');
+  const fmtD = d3.utcFormat('%d.%m');
+  const pd = (s) => new Date(s + 'T00:00:00Z');
+  const has = (v) => v !== '' && v != null;
+  const toSec = (s) => { if (!has(s)) return null; const [m, ss] = String(s).split(':').map(Number); return m * 60 + ss; };
+  const fmtPace = (sec) => Math.floor(sec / 60) + ':' + String(Math.round(sec % 60)).padStart(2, '0');
+  const C = () => dash.colors;
+  const MUTED = 'var(--cds-chart-muted)';
+
+  const paintLegends = () => document.querySelectorAll('.vp [data-sw]').forEach((e) => {
+    e.style.setProperty('--sw', e.dataset.sw === 'muted' ? MUTED : dash.colors[Number(e.dataset.sw)]);
+  });
+
+  const state = (ids) => {
+    const s = ids.map((id) => dash.data(id).status);
+    if (s.every((x) => x === 'ok')) return 'ok';
+    if (s.some((x) => ['error', 'connect', 'declined', 'missing'].includes(x))) return 'error';
+    return 'loading';
+  };
+
+  function guard(el, ids) {
+    const s = state(ids);
+    el.classList.toggle('dash-skeleton', s === 'loading');
+    if (s === 'ok') return true;
+    el.replaceChildren();
+    if (s === 'error') {
+      const f = document.createElement('div');
+      f.className = 'vp-fail';
+      const dot = document.createElement('span');
+      dot.className = 'vp-fail-dot';
+      f.append(dot, document.createTextNode('Kunne ikke lastes'));
+      el.append(f);
+    }
+    return false;
+  }
+
+  function setup(el, H) {
+    el.replaceChildren();
+    const W = Math.max(280, Math.floor(el.clientWidth));
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`);
+    const tip = d3.select(el).append('div').attr('class', 'vp-tip');
+    return { W, svg, tip };
+  }
+
+  function textW(svg, strs, cls) {
+    const g = svg.append('g').attr('class', cls);
+    let w = 0;
+    for (const s of strs) w = Math.max(w, g.append('text').attr('class', cls).text(s).node().getComputedTextLength());
+    g.remove();
+    return w;
+  }
+
+  function yAxis(svg, y, ticks, fmt, x0, x1) {
+    const g = svg.append('g');
+    for (const t of ticks) {
+      g.append('line').attr('class', 'vp-grid-line').attr('x1', x0).attr('x2', x1).attr('y1', y(t)).attr('y2', y(t));
+      g.append('text').attr('class', 'vp-tick').attr('x', x0 - 6).attr('y', y(t)).attr('dy', '0.32em').attr('text-anchor', 'end').text(fmt(t));
+    }
+  }
+
+  function bandLabels(svg, x, keys, yPos) {
+    const lw = textW(svg, ['00.00'], 'vp-tick') + 8;
+    const k = Math.max(1, Math.ceil(lw / x.step()));
+    const n = keys.length;
+    svg.append('g').selectAll('text').data(keys.filter((_, i) => (n - 1 - i) % k === 0)).join('text')
+      .attr('class', 'vp-tick').attr('x', (d) => x(d) + x.bandwidth() / 2).attr('y', yPos).attr('text-anchor', 'middle')
+      .text((d) => fmtD(pd(d)));
+  }
+
+  function showTip(tip, el, px, title, lines) {
+    const t = tip.node();
+    t.replaceChildren();
+    const h = document.createElement('div');
+    h.className = 'vp-tip-t';
+    h.textContent = title;
+    t.append(h);
+    for (const l of lines) {
+      const row = document.createElement('div');
+      row.className = l.note ? 'vp-tip-m' : 'vp-tip-r';
+      if (l.color) {
+        const sw = document.createElement('i');
+        sw.className = 'vp-tip-sw' + (l.hollow ? ' hollow' : '');
+        sw.style.setProperty('--sw', l.color);
+        row.append(sw);
+      }
+      const n = document.createElement('span');
+      n.textContent = l.name;
+      row.append(n);
+      if (l.value != null) {
+        const v = document.createElement('b');
+        v.textContent = l.value;
+        row.append(v);
+      }
+      t.append(row);
+    }
+    t.style.display = 'block';
+    const W = el.clientWidth, tw = t.offsetWidth;
+    let left = px + 14;
+    if (left + tw > W) left = px - 14 - tw;
+    left = Math.max(0, Math.min(left, W - tw));
+    t.style.left = left + 'px';
+    t.style.top = '4px';
+  }
+  const hideTip = (tip) => { tip.node().style.display = 'none'; };
+
+  const barPath = (x0, y0, w, h, r) => {
+    r = Math.max(0, Math.min(r, w / 2, h));
+    return `M${x0},${y0 + h}V${y0 + r}Q${x0},${y0} ${x0 + r},${y0}H${x0 + w - r}Q${x0 + w},${y0} ${x0 + w},${y0 + r}V${y0 + h}Z`;
+  };
+
+  // ---------- Nøkkeltall ----------
+  const FMT = {
+    siste_snitt_kg: f1, start_kg: f1, ned_kg: f1, over_maal_kg: f1,
+    kcal_snitt: f0, protein_snitt: f0, dager: f0, jogg_turer: f0, gaa_turer: f0,
+    jogg_km: f1, gaa_km: f1, livvidde_cm: f1, livvidde_endring_cm: fs1,
+  };
+  function fillKpis() {
+    const s = state(['nokkeltall']);
+    const k = s === 'ok' ? dash.data('nokkeltall').data[0] : null;
+    document.querySelectorAll('.vp [data-source="nokkeltall"]').forEach((el) => {
+      el.classList.toggle('dash-skeleton', s === 'loading');
+      if (!k) { el.textContent = '—'; return; }
+      const v = k[el.dataset.field];
+      el.textContent = v == null ? '—' : (FMT[el.dataset.field] ? FMT[el.dataset.field](v) : String(v));
+    });
+    const ned = document.querySelector('#kpi-endring .num');
+    ned.classList.toggle('good', !!k && k.ned_kg > 0);
+  }
+
+  // ---------- Vekt ----------
+  function drawVekt() {
+    const el = document.getElementById('vekt-graf');
+    const H = 260;
+    if (!guard(el, ['vekt', 'snitt5'])) return;
+    const rows = dash.data('vekt').data;
+    const korr = rows.filter((r) => has(r.korrigert_kg)).map((r) => ({
+      d: pd(r.dato), v: Number(r.korrigert_kg), k: Number(r.korreksjon_kg), g: r.korreksjon_grunnlag, b: r.betingelse, raa: Number(r.raa_kg),
+    }));
+    const lml = rows.filter((r) => r.like_med_like === 'ja').map((r) => ({ d: pd(r.dato), v: Number(r.raa_kg) }));
+    const sn = dash.data('snitt5').data.map((r) => ({ d: pd(r.dato), v: Number(r.snitt_kg) }));
+    const all = [...korr, ...lml, ...sn];
+    if (!all.length) { el.replaceChildren(); return; }
+    const { W, svg, tip } = setup(el, H);
+    const c0 = C()[0], c1 = C()[1];
+    const lo = Math.floor(Math.min(MAAL_KG, d3.min(all, (p) => p.v)) - 1);
+    const hi = Math.ceil(d3.max(all, (p) => p.v) + 0.5);
+    const yt = d3.range(lo % 2 ? lo + 1 : lo, hi + 1, 2);
+    const ml = textW(svg, yt.map(f0), 'vp-tick') + 12, mr = 8, mt = 8, mb = 26;
+    const y = d3.scaleLinear([lo, hi], [H - mb, mt]);
+    const dmin = d3.min(all, (p) => p.d), dmax = d3.max(all, (p) => p.d);
+    const x = d3.scaleUtc([d3.utcHour.offset(dmin, -18), d3.utcHour.offset(dmax, 18)], [ml, W - mr]);
+    yAxis(svg, y, yt, f0, ml, W - mr);
+    const lw = textW(svg, ['00.00'], 'vp-tick') + 14;
+    const nDays = d3.utcDay.count(dmin, dmax) + 1;
+    const xt = x.ticks(Math.max(2, Math.min(nDays, Math.floor((W - ml - mr) / lw)))).filter((t) => t.getUTCHours() === 0);
+    svg.append('g').selectAll('text').data(xt).join('text').attr('class', 'vp-tick')
+      .attr('x', (t) => x(t)).attr('y', H - 8).attr('text-anchor', 'middle').text(fmtD);
+
+    svg.append('line').attr('class', 'vp-ref').attr('x1', ml).attr('x2', W - mr).attr('y1', y(MAAL_KG)).attr('y2', y(MAAL_KG));
+    svg.append('text').attr('class', 'vp-tick').attr('x', W - mr).attr('y', y(MAAL_KG) - 6).attr('text-anchor', 'end').text('Arbeidsmål 85 kg');
+
+    svg.append('g').selectAll('circle').data(korr).join('circle')
+      .attr('cx', (p) => x(p.d)).attr('cy', (p) => y(p.v)).attr('r', 4.5)
+      .style('fill', (p) => (p.k === 0 ? MUTED : 'var(--color-panel)')).style('stroke', MUTED).style('stroke-width', 1.5);
+
+    const line = d3.line().x((p) => x(p.d)).y((p) => y(p.v));
+    svg.append('path').datum(lml).attr('class', 'vp-line').attr('d', line).style('stroke', c1);
+    svg.append('g').selectAll('circle').data(lml).join('circle').attr('class', 'vp-ring')
+      .attr('cx', (p) => x(p.d)).attr('cy', (p) => y(p.v)).attr('r', 4).style('fill', c1);
+    svg.append('path').datum(sn).attr('class', 'vp-line').attr('d', line).style('stroke', c0);
+    svg.append('g').selectAll('circle').data(sn).join('circle').attr('class', 'vp-ring')
+      .attr('cx', (p) => x(p.d)).attr('cy', (p) => y(p.v)).attr('r', 3.5).style('fill', c0);
+
+    const dates = Array.from(new Set(all.map((p) => +p.d))).sort((a, b) => a - b);
+    const at = (ms, arr) => arr.find((p) => +p.d === ms);
+    const rule = svg.append('line').attr('class', 'vp-rule').attr('y1', mt).attr('y2', H - mb).style('opacity', 0);
+    const ov = svg.append('rect').attr('x', ml).attr('y', 0).attr('width', Math.max(0, W - ml - mr)).attr('height', H)
+      .style('fill', 'transparent').style('touch-action', 'pan-y');
+    const move = (ev) => {
+      const [px] = d3.pointer(ev, svg.node());
+      const ms = dates[d3.minIndex(dates, (t) => Math.abs(x(new Date(t)) - px))];
+      const k = at(ms, korr), l = at(ms, lml), s = at(ms, sn);
+      const cx = x(new Date(ms));
+      rule.attr('x1', cx).attr('x2', cx).style('opacity', 1);
+      const lines = [];
+      if (s) lines.push({ color: c0, name: 'Glidende snitt', value: f1(s.v) + ' kg' });
+      if (l) lines.push({ color: c1, name: 'Like med like, rå', value: f1(l.v) + ' kg' });
+      if (k) {
+        lines.push({ color: MUTED, hollow: k.k !== 0, name: 'Korrigert', value: (k.k !== 0 ? '~' : '') + f1(k.v) + ' kg' });
+        lines.push({ note: true, name: 'Rå ' + f1(k.raa) + ' kg. ' + k.b });
+        lines.push({ note: true, name: k.k === 0 ? 'Ingen korreksjon (' + k.g + ')' : 'Korreksjon ' + fs1(k.k) + ' kg (' + k.g + ')' });
+      }
+      showTip(tip, el, cx, fmtD(new Date(ms)), lines);
+    };
+    ov.on('pointermove', move).on('pointerdown', move)
+      .on('pointerleave', () => { rule.style('opacity', 0); hideTip(tip); });
+  }
+
+  // ---------- Framskrivning ----------
+  const MND = ['jan', 'feb', 'mar', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'des'];
+  const fmtLang = (iso) => (iso ? Number(iso.slice(8, 10)) + '. ' + MND[Number(iso.slice(5, 7)) - 1] + ' ' + iso.slice(0, 4) : '–');
+  function drawPrognose() {
+    const el = document.getElementById('prognose-graf');
+    const tb = document.getElementById('prognose-tbody');
+    tb.replaceChildren();
+    const H = 260;
+    if (!guard(el, ['snitt5', 'framskriving', 'milepaeler'])) return;
+    const sn = dash.data('snitt5').data.map((r) => ({ d: pd(r.dato), v: Number(r.snitt_kg) }));
+    const fr = dash.data('framskriving').data.map((r) => ({
+      d: pd(r.dato), m: r.midt_kg, r: r.rask_kg, t: r.treg_kg,
+    }));
+    if (!sn.length || !fr.length) { el.replaceChildren(); return; }
+    const { W, svg, tip } = setup(el, H);
+    const c0 = C()[0];
+    const lo = 74, hi = Math.ceil(d3.max(sn, (p) => p.v) + 1);
+    const yt = d3.range(lo % 2 ? lo + 1 : lo, hi + 1, 2);
+    const ml = textW(svg, yt.map(f0), 'vp-tick') + 12, mr = 8, mt = 8, mb = 26;
+    const y = d3.scaleLinear([lo, hi], [H - mb, mt]);
+    const dmin = sn[0].d, dmax = fr[fr.length - 1].d;
+    const x = d3.scaleUtc([dmin, dmax], [ml, W - mr]);
+    yAxis(svg, y, yt, f0, ml, W - mr);
+    const lw = textW(svg, ['okt 26'], 'vp-tick') + 16;
+    const xt = d3.utcMonth.range(d3.utcMonth.ceil(dmin), dmax).filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / Math.max(1, Math.floor((W - ml - mr) / lw)))) === 0);
+    svg.append('g').selectAll('text').data(xt).join('text').attr('class', 'vp-tick')
+      .attr('x', (t) => x(t)).attr('y', H - 8).attr('text-anchor', 'middle')
+      .text((t) => MND[t.getUTCMonth()] + ' ' + String(t.getUTCFullYear()).slice(2));
+
+    for (const [kg, txt] of [[85, 'Arbeidsmål 85 kg'], [80, '80 kg'], [75, '75 kg']]) {
+      svg.append('line').attr('class', 'vp-ref').attr('x1', ml).attr('x2', W - mr).attr('y1', y(kg)).attr('y2', y(kg));
+      svg.append('text').attr('class', 'vp-tick').attr('x', W - mr).attr('y', y(kg) - 6).attr('text-anchor', 'end').text(txt);
+    }
+    // Bånd: raskere (nedre) til tregere (øvre); en linje som har nådd 75 holdes på 75.
+    const band = fr.map((p) => ({ d: p.d, a: p.r == null ? 75 : p.r, b: p.t == null ? 75 : p.t }));
+    svg.append('path').datum(band)
+      .attr('d', d3.area().x((p) => x(p.d)).y0((p) => y(p.b)).y1((p) => y(p.a)))
+      .style('fill', c0).style('opacity', 0.15);
+    const mid = fr.filter((p) => p.m != null);
+    svg.append('path').datum(mid).attr('class', 'vp-line').style('stroke', c0).style('stroke-dasharray', '5 4')
+      .attr('d', d3.line().x((p) => x(p.d)).y((p) => y(p.m)));
+    const line = d3.line().x((p) => x(p.d)).y((p) => y(p.v));
+    svg.append('path').datum(sn).attr('class', 'vp-line').attr('d', line).style('stroke', c0);
+    svg.append('g').selectAll('circle').data(sn).join('circle').attr('class', 'vp-ring')
+      .attr('cx', (p) => x(p.d)).attr('cy', (p) => y(p.v)).attr('r', 3.5).style('fill', c0);
+
+    const rule = svg.append('line').attr('class', 'vp-rule').attr('y1', mt).attr('y2', H - mb).style('opacity', 0);
+    const pts = [...sn.map((p) => ({ d: p.d, s: p })), ...fr.map((p) => ({ d: p.d, f: p }))].sort((a, b) => a.d - b.d);
+    const ov = svg.append('rect').attr('x', ml).attr('y', 0).attr('width', Math.max(0, W - ml - mr)).attr('height', H)
+      .style('fill', 'transparent').style('touch-action', 'pan-y');
+    const move = (ev) => {
+      const [px] = d3.pointer(ev, svg.node());
+      const ms = +pts[d3.minIndex(pts, (p) => Math.abs(x(p.d) - px))].d;
+      const s = sn.find((p) => +p.d === ms), f = fr.find((p) => +p.d === ms);
+      const cx = x(new Date(ms));
+      rule.attr('x1', cx).attr('x2', cx).style('opacity', 1);
+      const lines = [];
+      if (s) lines.push({ color: c0, name: 'Glidende snitt, målt', value: f1(s.v) + ' kg' });
+      if (f) {
+        const v = (z) => (z == null ? 'under 75' : '~' + f1(z) + ' kg');
+        lines.push({ name: 'Framskrivning, midt', value: v(f.m) });
+        lines.push({ name: 'Raskere / tregere', value: v(f.r) + ' / ' + v(f.t) });
+      }
+      showTip(tip, el, cx, fmtLang(new Date(ms).toISOString().slice(0, 10)), lines);
+    };
+    ov.on('pointermove', move).on('pointerdown', move)
+      .on('pointerleave', () => { rule.style('opacity', 0); hideTip(tip); });
+
+    for (const r of dash.data('milepaeler').data) {
+      const tr = document.createElement('tr');
+      for (const [f, num] of [['maal_kg', false], ['rask', true], ['midt', true], ['treg', true]]) {
+        const td = document.createElement('td');
+        if (num) td.className = 'num';
+        td.textContent = f === 'maal_kg' ? String(r[f]) : fmtLang(r[f]);
+        tr.append(td);
+      }
+      tb.append(tr);
+    }
+  }
+
+  // ---------- Mat ----------
+  function drawBars(elId, field, opts) {
+    const el = document.getElementById(elId);
+    const H = 210;
+    if (!guard(el, ['mat'])) return;
+    const rows = dash.data('mat').data.map((r) => ({ dato: r.dato, kcal: Number(r.kcal), p: Number(r.protein_g), v: Number(r[field]), u: r.merknad || '', l: r.lunsj || '', k: r.kveld || '', a: r.annet || '' }))
+      .sort((a, b) => (a.dato < b.dato ? -1 : 1));
+    if (!rows.length) { el.replaceChildren(); return; }
+    const { W, svg, tip } = setup(el, H);
+    const c0 = C()[0];
+    const yMax = Math.max(opts.min, Math.ceil(d3.max(rows, (r) => r.v) / opts.step) * opts.step);
+    const yt = d3.range(0, yMax + 1, opts.step);
+    const ml = textW(svg, yt.map(f0), 'vp-tick') + 12, mr = 6, mt = 8, mb = 26;
+    const y = d3.scaleLinear([0, yMax], [H - mb, mt]);
+    const keys = rows.map((r) => r.dato);
+    const x = d3.scaleBand(keys, [ml, W - mr]).paddingInner(0.25).paddingOuter(0.1);
+    yAxis(svg, y, yt, f0, ml, W - mr);
+    if (opts.band) {
+      svg.append('rect').attr('x', ml).attr('width', W - mr - ml).attr('y', y(opts.band[1])).attr('height', y(opts.band[0]) - y(opts.band[1]))
+        .style('fill', 'var(--cds-chart-reference)').style('opacity', 0.14);
+    }
+    const bw = Math.min(32, x.bandwidth());
+    const bars = svg.append('g').selectAll('path').data(rows).join('path')
+      .attr('d', (r) => barPath(x(r.dato) + (x.bandwidth() - bw) / 2, y(r.v), bw, y(0) - y(r.v), 4))
+      .style('fill', c0).style('fill-opacity', (r) => (r.u ? 0.45 : 1))
+      .style('stroke', (r) => (r.u ? c0 : 'none')).style('stroke-width', 1);
+    svg.append('line').attr('class', 'vp-axis').attr('x1', ml).attr('x2', W - mr).attr('y1', y(0)).attr('y2', y(0));
+    if (opts.ref != null) svg.append('line').attr('class', 'vp-ref').attr('x1', ml).attr('x2', W - mr).attr('y1', y(opts.ref)).attr('y2', y(opts.ref));
+    if (opts.band) {
+      for (const b of opts.band) svg.append('line').attr('class', 'vp-ref').attr('x1', ml).attr('x2', W - mr).attr('y1', y(b)).attr('y2', y(b));
+    }
+    bandLabels(svg, x, keys, H - 8);
+    const gap = x.step() - x.bandwidth();
+    svg.append('g').selectAll('rect').data(rows).join('rect')
+      .attr('x', (r) => x(r.dato) - gap / 2).attr('y', 0).attr('width', x.step()).attr('height', H - mb)
+      .style('fill', 'transparent').style('touch-action', 'pan-y')
+      .on('pointerenter pointerdown', (ev, r) => {
+        bars.style('opacity', (b) => (b === r ? 1 : 0.5));
+        const lines = [
+          { name: 'kcal', value: '~' + f0(r.kcal) },
+          { name: 'Protein', value: '~' + f0(r.p) + ' g' },
+        ];
+        if (r.l) lines.push({ note: true, name: 'Lunsj: ' + r.l });
+        if (r.k) lines.push({ note: true, name: 'Kveld: ' + r.k });
+        if (r.a) lines.push({ note: true, name: r.a });
+        if (r.u) lines.push({ note: true, name: 'Usikkert: ' + r.u });
+        showTip(tip, el, x(r.dato) + x.bandwidth() / 2, fmtD(pd(r.dato)), lines);
+      })
+      .on('pointerleave', () => { bars.style('opacity', 1); hideTip(tip); });
+  }
+
+  // ---------- Matkilder (kakediagram) ----------
+  const KILDE_FARGE = { 'Hvitost': 0, 'Kantineretter og kjøtt': 1, 'Boksfisk (sardin, brisling)': 2, 'Røkelaks': 3, 'Knekkebrød': 4, 'Egg': 5 };
+  const kildeFarge = (k) => (k in KILDE_FARGE ? C()[KILDE_FARGE[k]] : MUTED);
+
+  const pieMarks = [];
+  const markAll = (kilde) => pieMarks.forEach((m) => m(kilde));
+  const PIES = [
+    { id: 'kilder-kcal', v: 'kcal', andel: 'andel_pst', dag: 'kcal_per_dag', fDag: f0, enhet: 'kcal', fTot: f0 },
+    { id: 'kilder-protein', v: 'protein_g', andel: 'andel_protein_pst', dag: 'protein_per_dag', fDag: f1, enhet: 'g', fTot: f0 },
+  ];
+
+  function drawPie(p, i) {
+    const el = document.getElementById(p.id + '-graf');
+    const tb = document.querySelector('#' + p.id + ' tbody');
+    tb.replaceChildren();
+    pieMarks[i] = () => {};
+    if (!guard(el, ['kilder'])) return;
+    const rows = dash.data('kilder').data.slice()
+      .sort((a, b) => (a.kilde === 'Annet') - (b.kilde === 'Annet') || Number(b[p.v]) - Number(a[p.v]));
+    if (!rows.length) { el.replaceChildren(); return; }
+    const H = 230;
+    const { W, svg, tip } = setup(el, H);
+    const R = Math.min(W, H) / 2 - 7;
+    const g = svg.append('g').attr('transform', `translate(${W / 2},${H / 2})`);
+    const arcs = d3.pie().sort(null).value((r) => Number(r[p.v]))(rows);
+    const arc = d3.arc().innerRadius(0).outerRadius(R);
+    const arcHi = d3.arc().innerRadius(0).outerRadius(R + 5);
+    const paths = g.selectAll('path').data(arcs).join('path')
+      .attr('d', arc).style('fill', (a) => kildeFarge(a.data.kilde))
+      .style('stroke', 'var(--color-panel)').style('stroke-width', 2).style('stroke-linejoin', 'round')
+      .style('touch-action', 'pan-y');
+    const trs = [];
+    pieMarks[i] = (kilde) => {
+      paths.attr('d', (a) => (kilde && a.data.kilde === kilde ? arcHi(a) : arc(a)))
+        .style('opacity', (a) => (!kilde || a.data.kilde === kilde ? 1 : 0.4));
+      trs.forEach((tr) => tr.classList.toggle('on', !!kilde && tr.dataset.key === kilde));
+    };
+    const tipFor = (r, px) => showTip(tip, el, px, r.kilde, [
+      { color: kildeFarge(r.kilde), name: 'Andel', value: f1(Number(r[p.andel])) + ' %' },
+      { name: 'Per dag', value: '~' + p.fDag(Number(r[p.dag])) + ' ' + p.enhet },
+      { name: 'Totalt', value: '~' + p.fTot(Number(r[p.v])) + ' ' + p.enhet },
+      { name: 'Antall ganger', value: f0(Number(r.ganger)) },
+    ]);
+    paths.on('pointerenter pointermove pointerdown', (ev, a) => { markAll(a.data.kilde); tipFor(a.data, d3.pointer(ev, el)[0]); })
+      .on('pointerleave', () => { markAll(null); hideTip(tip); });
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      tr.dataset.key = r.kilde;
+      const td0 = document.createElement('td');
+      const kl = document.createElement('span');
+      kl.className = 'kl';
+      const sw = document.createElement('i');
+      sw.className = 'vp-sw bar';
+      sw.style.setProperty('--sw', kildeFarge(r.kilde));
+      kl.append(sw, document.createTextNode(r.kilde));
+      td0.append(kl);
+      const td1 = document.createElement('td');
+      td1.className = 'num';
+      td1.textContent = f1(Number(r[p.andel])) + ' %';
+      const td2 = document.createElement('td');
+      td2.className = 'num';
+      td2.textContent = p.fDag(Number(r[p.dag]));
+      tr.append(td0, td1, td2);
+      tr.addEventListener('pointerenter', () => { markAll(r.kilde); hideTip(tip); });
+      tr.addEventListener('pointerleave', () => markAll(null));
+      trs.push(tr);
+      tb.append(tr);
+    }
+  }
+
+  function drawKilder() {
+    const dagerEl = document.querySelector('#kilder-kort [data-field="dager"]');
+    const s = state(['kilder']);
+    dagerEl.classList.toggle('dash-skeleton', s === 'loading');
+    dagerEl.textContent = s === 'ok' && dash.data('kilder').data.length ? f0(Number(dash.data('kilder').data[0].dager)) : '—';
+    PIES.forEach(drawPie);
+  }
+
+  // ---------- Blodsukker ----------
+  const pt = (s) => new Date(s + ':00Z');
+  const fmtKl = d3.utcFormat('%H:%M');
+  const fmtDagKl = (s) => s.slice(8, 10) + '.' + s.slice(5, 7) + ' kl. ' + s.slice(11, 16);
+  const BS_LO = 70, BS_HI = 140, BS_LAV = 54;
+
+  function fillBsKpis() {
+    const s = state(['bs_nokkeltall']);
+    const k = s === 'ok' ? dash.data('bs_nokkeltall').data[0] : null;
+    document.querySelectorAll('#bs-kpis [data-source="bs_nokkeltall"]').forEach((el) => {
+      el.classList.toggle('dash-skeleton', s === 'loading');
+      const v = k ? k[el.dataset.field] : null;
+      el.textContent = v == null ? '—' : (el.dataset.field === 'snitt_mmol' ? f1(v) : f0(v));
+    });
+  }
+
+  function drawBs() {
+    const el = document.getElementById('bs-graf');
+    const H = 250;
+    if (!guard(el, ['blodsukker'])) return;
+    const rows = dash.data('blodsukker').data
+      .filter((r) => r.kilde === 'CGM-kurve')
+      .map((r) => ({ t: r.tid, d: pt(r.tid), v: Number(r.mg_dl), feil: r.kvalitet !== 'ok', nokkel: r.nokkel === 'ja' }))
+      .sort((a, b) => a.d - b.d);
+    if (!rows.length) { el.replaceChildren(); return; }
+    const { W, svg, tip } = setup(el, H);
+    const c0 = C()[0];
+    const lo = 30, hi = 150;
+    const yt = [40, 70, 100, 140];
+    const ml = textW(svg, yt.map(f0), 'vp-tick') + 12, mr = 8, mt = 10, mb = 26;
+    const y = d3.scaleLinear([lo, hi], [H - mb, mt]);
+    const x = d3.scaleUtc([rows[0].d, rows[rows.length - 1].d], [ml, W - mr]);
+    svg.append('rect').attr('x', ml).attr('width', W - mr - ml).attr('y', y(BS_HI)).attr('height', y(BS_LO) - y(BS_HI))
+      .style('fill', 'var(--cds-chart-reference)').style('opacity', 0.14);
+    yAxis(svg, y, yt, f0, ml, W - mr);
+    svg.append('line').attr('class', 'vp-ref').attr('x1', ml).attr('x2', W - mr).attr('y1', y(BS_LAV)).attr('y2', y(BS_LAV));
+    svg.append('text').attr('class', 'vp-tick').attr('x', W - mr).attr('y', y(BS_LAV) - 5).attr('text-anchor', 'end').text('Lavt 54');
+    const lw = textW(svg, ['00:00'], 'vp-tick') + 18;
+    const xt = x.ticks(d3.utcHour.every(Math.max(1, Math.ceil(((rows[rows.length - 1].d - rows[0].d) / 36e5) / Math.max(1, Math.floor((W - ml - mr) / lw))))));
+    svg.append('g').selectAll('text').data(xt).join('text').attr('class', 'vp-tick')
+      .attr('x', (d) => x(d)).attr('y', H - 8).attr('text-anchor', 'middle').text((d) => fmtKl(d));
+    // Linjestykker: brudd ved hull over 35 min; heltrukket mellom to ok-punkter, stiplet ellers.
+    const g = svg.append('g');
+    for (let i = 1; i < rows.length; i++) {
+      const a = rows[i - 1], b = rows[i];
+      if (b.d - a.d > 35 * 6e4) continue;
+      const ok = !a.feil && !b.feil;
+      g.append('line').attr('x1', x(a.d)).attr('y1', y(a.v)).attr('x2', x(b.d)).attr('y2', y(b.v))
+        .style('stroke', ok ? c0 : MUTED).style('stroke-width', 2).style('stroke-linecap', 'round')
+        .style('stroke-dasharray', ok ? null : '4 4');
+    }
+    svg.append('g').selectAll('circle').data(rows.filter((r) => r.feil)).join('circle')
+      .attr('cx', (r) => x(r.d)).attr('cy', (r) => y(r.v)).attr('r', 4)
+      .style('fill', 'var(--color-panel)').style('stroke', MUTED).style('stroke-width', 1.5);
+    for (const r of rows.filter((p) => p.nokkel)) {
+      svg.append('circle').attr('class', 'vp-ring').attr('cx', x(r.d)).attr('cy', y(r.v)).attr('r', 4.5).style('fill', r.feil ? MUTED : c0);
+      const right = x(r.d) > (ml + W - mr) / 2;
+      svg.append('text').attr('class', 'vp-lab').attr('x', x(r.d) + (right ? -8 : 8)).attr('y', y(r.v) + (r.feil ? 4 : -8))
+        .attr('text-anchor', right ? 'end' : 'start').text(f0(r.v) + (r.feil ? ' – trolig trykkfall' : ' – topp etter kveldsmat'));
+    }
+    const rule = svg.append('line').attr('class', 'vp-rule').attr('y1', mt).attr('y2', H - mb).style('opacity', 0);
+    const ov = svg.append('rect').attr('x', ml).attr('y', 0).attr('width', Math.max(0, W - ml - mr)).attr('height', H)
+      .style('fill', 'transparent').style('touch-action', 'pan-y');
+    const move = (ev) => {
+      const [px] = d3.pointer(ev, svg.node());
+      const r = rows[d3.minIndex(rows, (p) => Math.abs(x(p.d) - px))];
+      rule.attr('x1', x(r.d)).attr('x2', x(r.d)).style('opacity', 1);
+      const lines = [
+        { color: r.feil ? MUTED : c0, hollow: r.feil, name: 'mg/dL', value: '~' + f0(r.v) },
+        { name: 'mmol/L', value: '~' + f1(r.v / 18) },
+      ];
+      if (r.feil) lines.push({ note: true, name: 'Trolig trykkfall (feilmåling)' });
+      showTip(tip, el, x(r.d), fmtDagKl(r.t), lines);
+    };
+    ov.on('pointermove', move).on('pointerdown', move)
+      .on('pointerleave', () => { rule.style('opacity', 0); hideTip(tip); });
+  }
+
+  function fillBsTable() {
+    const tb = document.querySelector('#bs-tabell tbody');
+    tb.replaceChildren();
+    if (state(['bs_nokkel']) !== 'ok') return;
+    for (const r of dash.data('bs_nokkel').data) {
+      const tr = document.createElement('tr');
+      tr.dataset.key = r.tid;
+      const cells = [fmtDagKl(r.tid), f0(r.mg_dl), f1(r.mmol_l), r.kilde, r.merknad || ''];
+      cells.forEach((c, i) => {
+        const td = document.createElement('td');
+        if (i === 1 || i === 2) td.className = 'num';
+        td.textContent = c;
+        tr.append(td);
+      });
+      tb.append(tr);
+    }
+  }
+
+  // ---------- Trening ----------
+  function drawTur() {
+    const el = document.getElementById('tur-graf');
+    const H = 250;
+    if (!guard(el, ['aktivitet'])) return;
+    const rows = dash.data('aktivitet').data.map((r) => ({
+      dato: r.dato, type: r.type, km: has(r.km) ? Number(r.km) : null, tid: r.tid || '', snitt: r.snitt_per_km || '',
+      sek: toSec(r.snitt_per_km), m: r.merknad || '',
+    })).sort((a, b) => (a.dato < b.dato ? -1 : 1));
+    if (!rows.length) { el.replaceChildren(); return; }
+    const timed = rows.filter((r) => r.sek != null);
+    const { W, svg, tip } = setup(el, H);
+    const c0 = C()[0];
+    const lo = timed.length ? Math.floor((d3.min(timed, (r) => r.sek) - 15) / 30) * 30 : 360;
+    const hi = timed.length ? Math.ceil((d3.max(timed, (r) => r.sek) + 15) / 30) * 30 : 480;
+    const yt = d3.range(lo, hi + 1, 30);
+    const ml = textW(svg, [...yt.map(fmtPace), 'Dag'], 'vp-tick') + 12, mr = 6, mt = 18, mb = 26;
+    const stripH = 14, stripY = H - mb - stripH - 4, plotBottom = stripY - 16;
+    const y = d3.scaleLinear([lo, hi], [plotBottom, mt]);
+    const keys = rows.map((r) => r.dato);
+    const x = d3.scaleBand(keys, [ml, W - mr]).paddingInner(0.2).paddingOuter(0.1);
+    const cx = (r) => x(r.dato) + x.bandwidth() / 2;
+    yAxis(svg, y, yt, fmtPace, ml, W - mr);
+
+    svg.append('path').datum(timed).attr('class', 'vp-line').attr('d', d3.line().x(cx).y((r) => y(r.sek))).style('stroke', c0);
+    svg.append('g').selectAll('circle').data(timed).join('circle').attr('class', 'vp-ring')
+      .attr('cx', cx).attr('cy', (r) => y(r.sek)).attr('r', 4.5).style('fill', c0);
+    if (timed.length) {
+      const fast = timed[d3.minIndex(timed, (r) => r.sek)], last = timed[timed.length - 1];
+      for (const r of fast === last ? [fast] : [fast, last]) {
+        const px = cx(r);
+        const anchor = px > W - mr - 20 ? 'end' : (px < ml + 20 ? 'start' : 'middle');
+        svg.append('text').attr('class', 'vp-lab').attr('x', px).attr('y', y(r.sek) - 9).attr('text-anchor', anchor).text(r.snitt);
+      }
+    }
+
+    const sw = Math.min(x.bandwidth(), 22);
+    svg.append('text').attr('class', 'vp-tick').attr('x', ml - 6).attr('y', stripY + stripH / 2).attr('dy', '0.32em').attr('text-anchor', 'end').text('Dag');
+    const strip = svg.append('g');
+    for (const r of rows) {
+      const x0 = cx(r) - sw / 2;
+      if (r.type === 'Jogging' || r.type === 'Gåtur') {
+        strip.append('rect').attr('x', x0).attr('y', stripY).attr('width', sw).attr('height', stripH).attr('rx', 3)
+          .style('fill', r.type === 'Jogging' ? c0 : MUTED);
+      } else {
+        strip.append('line').attr('class', 'vp-axis').attr('x1', x0 + 2).attr('x2', x0 + sw - 2).attr('y1', stripY + stripH / 2).attr('y2', stripY + stripH / 2);
+      }
+    }
+    bandLabels(svg, x, keys, H - 8);
+
+    const gap = x.step() - x.bandwidth();
+    const rule = svg.append('line').attr('class', 'vp-rule').attr('y1', mt).attr('y2', stripY + stripH).style('opacity', 0);
+    svg.append('g').selectAll('rect').data(rows).join('rect')
+      .attr('x', (r) => x(r.dato) - gap / 2).attr('y', 0).attr('width', x.step()).attr('height', H - mb)
+      .style('fill', 'transparent').style('touch-action', 'pan-y')
+      .on('pointerenter pointerdown', (ev, r) => {
+        rule.attr('x1', cx(r)).attr('x2', cx(r)).style('opacity', 1);
+        const lines = [];
+        if (r.km != null) lines.push({ name: 'Distanse', value: f2(r.km) + ' km' });
+        if (r.type === 'Jogging') {
+          lines.push({ name: 'Tid', value: r.tid || '–' });
+          lines.push({ name: 'Snitt per km', value: r.snitt || '–' });
+        }
+        if (r.m) lines.push({ note: true, name: r.m });
+        showTip(tip, el, cx(r), fmtD(pd(r.dato)) + ' · ' + r.type, lines);
+      })
+      .on('pointerleave', () => { rule.style('opacity', 0); hideTip(tip); });
+  }
+
+  // ---------- Livvidde ----------
+  function drawLiv() {
+    const el = document.getElementById('liv-graf');
+    const H = 210;
+    if (!guard(el, ['livvidde'])) return;
+    const rows = dash.data('livvidde').data.map((r) => ({ dato: r.dato, v: Number(r.cm) })).sort((a, b) => (a.dato < b.dato ? -1 : 1));
+    if (!rows.length) { el.replaceChildren(); return; }
+    const { W, svg, tip } = setup(el, H);
+    const c0 = C()[0];
+    const lo = Math.floor((Math.min(LIV_REF, d3.min(rows, (r) => r.v)) - 4) / 5) * 5;
+    const hi = Math.ceil((d3.max(rows, (r) => r.v) + 2) / 5) * 5;
+    const yt = d3.range(lo, hi + 1, 5);
+    const ml = textW(svg, yt.map(f0), 'vp-tick') + 12, mr = 10, mt = 20, mb = 26;
+    const y = d3.scaleLinear([lo, hi], [H - mb, mt]);
+    const keys = rows.map((r) => r.dato);
+    const x = d3.scalePoint(keys, [ml, W - mr]).padding(0.6);
+    yAxis(svg, y, yt, f0, ml, W - mr);
+    svg.append('line').attr('class', 'vp-ref').attr('x1', ml).attr('x2', W - mr).attr('y1', y(LIV_REF)).attr('y2', y(LIV_REF));
+    svg.append('text').attr('class', 'vp-tick').attr('x', W - mr).attr('y', y(LIV_REF) - 6).attr('text-anchor', 'end').text('Halve høyden, 89 cm');
+    svg.append('path').datum(rows).attr('class', 'vp-line').attr('d', d3.line().x((r) => x(r.dato)).y((r) => y(r.v))).style('stroke', c0);
+    svg.append('g').selectAll('circle').data(rows).join('circle').attr('class', 'vp-ring')
+      .attr('cx', (r) => x(r.dato)).attr('cy', (r) => y(r.v)).attr('r', 4.5).style('fill', c0);
+    svg.append('g').selectAll('text').data(rows).join('text').attr('class', 'vp-lab')
+      .attr('x', (r) => x(r.dato)).attr('y', (r) => y(r.v) - 10).attr('text-anchor', 'middle').text((r) => f1(r.v));
+    svg.append('g').selectAll('text').data(rows).join('text').attr('class', 'vp-tick')
+      .attr('x', (r) => x(r.dato)).attr('y', H - 8).attr('text-anchor', 'middle').text((r) => fmtD(pd(r.dato)));
+    svg.append('g').selectAll('circle').data(rows).join('circle')
+      .attr('cx', (r) => x(r.dato)).attr('cy', (r) => y(r.v)).attr('r', 18).style('fill', 'transparent')
+      .on('pointerenter pointerdown', (ev, r) => showTip(tip, el, x(r.dato), fmtD(pd(r.dato)), [{ name: 'Livvidde', value: f1(r.v) + ' cm' }]))
+      .on('pointerleave', () => hideTip(tip));
+  }
+
+  // ---------- Tabeller ----------
+  function fillTable(sel, id, cols, rowClass) {
+    const tb = document.querySelector(sel + ' tbody');
+    tb.replaceChildren();
+    if (state([id]) !== 'ok') return;
+    const rows = dash.data(id).data.slice().sort((a, b) => (a.dato < b.dato ? 1 : -1));
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      tr.dataset.key = r.dato;
+      const c = rowClass ? rowClass(r) : '';
+      if (c) tr.className = c;
+      for (const col of cols) {
+        const td = document.createElement('td');
+        if (col.num) td.className = 'num';
+        td.textContent = col.fmt(r[col.f], r);
+        tr.append(td);
+      }
+      tb.append(tr);
+    }
+  }
+  const dash_ = (v) => (has(v) ? String(v) : '–');
+  const date = (v) => fmtD(pd(v));
+
+  function fillTables() {
+    fillTable('#vekt-tabell', 'vekt', [
+      { f: 'dato', fmt: date },
+      { f: 'raa_kg', num: true, fmt: (v) => (has(v) ? f1(Number(v)) : '–') },
+      { f: 'korrigert_kg', num: true, fmt: (v) => (has(v) ? f1(Number(v)) : '–') },
+      { f: 'korreksjon_kg', num: true, fmt: (v) => (has(v) ? (Number(v) === 0 ? '0' : fs1(Number(v))) : '–') },
+      { f: 'korreksjon_grunnlag', fmt: dash_ },
+      { f: 'betingelse', fmt: dash_ },
+    ]);
+    fillTable('#tur-tabell', 'aktivitet', [
+      { f: 'dato', fmt: date },
+      { f: 'type', fmt: dash_ },
+      { f: 'km', num: true, fmt: (v) => (has(v) ? f2(Number(v)) : '–') },
+      { f: 'tid', num: true, fmt: dash_ },
+      { f: 'snitt_per_km', num: true, fmt: dash_ },
+      { f: 'merknad', fmt: (v) => (has(v) ? v : '') },
+    ], (r) => (r.type === 'Jogging' ? '' : 'muted'));
+  }
+
+  let jumped = false;
+  dash.onData(() => {
+    paintLegends();
+    fillKpis();
+    drawVekt();
+    drawPrognose();
+    drawBars('kcal-graf', 'kcal', { min: 2000, step: 500, ref: MAAL_KCAL });
+    drawBars('protein-graf', 'protein_g', { min: 150, step: 50, band: [PROT_LO, PROT_HI] });
+    drawKilder();
+    drawTur();
+    drawLiv();
+    fillBsKpis();
+    drawBs();
+    fillBsTable();
+    fillTables();
+    if (!jumped && state(['vekt', 'mat', 'aktivitet', 'livvidde']) === 'ok') {
+      jumped = true;
+      try {
+        const n = location.hash && document.getElementById(location.hash.slice(1));
+        if (n) n.scrollIntoView();
+      } catch (e) { /* ingen lenke */ }
+    }
+  });
+})();
+</script>

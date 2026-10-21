@@ -1,0 +1,14 @@
+dato,raa_kg,betingelse,korreksjon_kg,korreksjon_grunnlag,korrigert_kg,like_med_like
+2026-09-29,94.2,"Kveld etter jogging, dehydrert",,ikke korrigert,,nei
+2026-10-02,94.7,"Med klær, rett etter kveldsmåltid",,ikke korrigert,,nei
+2026-10-04,93.8,"Morgen, før toalett",-0.3,anslag,93.5,nei
+2026-10-05,92.4,"Etter jogging, før kveldsmåltid",,ikke korrigert,,nei
+2026-10-06,92.5,"Morgen, før toalett. Samme kveld 91,3 etter jogging, før måltid",-0.3,anslag,92.2,nei
+2026-10-08,92.8,"Naken, etter jogging, før kveldsmat",0.9,"målt én gang (06.10), revidert 20.10",93.7,ja
+2026-10-09,90.4,"Kl. 11, etter toalett, før lunsj",0,nær referansebetingelsen,90.4,nei
+2026-10-10,90.4,"Naken, etter jogging, før kveldsmat",0.9,"målt én gang (06.10), revidert 20.10",91.3,ja
+2026-10-13,90.8,"Naken, kveld før måltid (etter lunsj)",-0.7,anslag,90.1,nei
+2026-10-14,90.9,"Naken, etter jogging, før kveldsmat",0.9,"målt én gang (06.10), revidert 20.10",91.8,ja
+2026-10-17,89.8,"Naken, etter jogging, før kveldsmat, etter toalett",0.9,"målt én gang (06.10), revidert 20.10",90.7,ja
+2026-10-19,89.5,"Naken, etter jogging, før kveldsmat",0.9,"målt én gang (06.10), revidert 20.10",90.4,ja
+2026-10-20,90.3,"Morgen, naken, før toalett",-0.3,anslag,90.0,nei
