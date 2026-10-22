@@ -11,7 +11,7 @@ import pathlib
 import zoneinfo
 
 ROOT = pathlib.Path(__file__).resolve().parent
-DATASETS = ["vekt", "mat", "matkilder", "aktivitet", "livvidde", "blodsukker", "strava_turer", "strava_splitter"]
+DATASETS = ["vekt", "mat", "matkilder", "aktivitet", "livvidde", "strava_turer", "strava_splitter"]  # blodsukker er bevisst utelatt (21.10)
 
 SHELL = """<!doctype html>
 <html lang="nb">
@@ -113,7 +113,7 @@ PUBLIC_REPLACE = [
     ("Hule punkter har fått en korreksjon; tabellen under viser hvilken og om den er målt eller anslått.", "Hule punkter har fått en korreksjon."),
 ]
 PUBLIC_CSS = """<style>
-.vp-card:has(#tur-tabell), .vp-card:has(#bs-tabell), .vp-card:has(#vekt-tabell), .vp-card:has(#rute-graf), .vp-foot { display: none !important; }
+.vp-card:has(#tur-tabell), .vp-card:has(#bs-tabell), .vp-card:has(#vekt-tabell), .vp-card:has(#rute-graf), #blodsukker, .vp-foot { display: none !important; }
 </style>
 """
 

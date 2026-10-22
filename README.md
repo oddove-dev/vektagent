@@ -2,7 +2,7 @@
 
 Offentlig visning av dashbordet «Vektprogrammet», publisert med GitHub Pages.
 
-- `data/*.csv` – tallene (vekt, mat, matkilder, aktivitet, livvidde, blodsukker), hentet fra Claude-dashbordet.
+- `data/*.csv` – tallene (vekt, mat, matkilder, aktivitet, livvidde, Strava). Blodsukker legges aldri her, hentet fra Claude-dashbordet.
 - `fragment.html` – dashbordets side.
 - `build.py` – bygger `index.html` av de to.
 
