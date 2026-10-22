@@ -218,7 +218,8 @@
   <section id="blodsukker">
     <h2>Blodsukker</h2>
     <div class="vp-stack">
-      <div class="vp-kpis" id="bs-kpis">
+      <p class="vp-note" id="bs-skjult">Sensorkurven og nøkkeltallene fra den er skjult til verdiene kan tas ut av appen. Tallene avlest fra skjermbilder ble for unøyaktige.</p>
+      <div class="vp-kpis" id="bs-kpis" hidden>
         <div class="vp-card vp-kpi" id="bs-kpi-snitt">
           <div class="lab">Snitt, sensorkurven</div>
           <div class="num"><span class="dash-skeleton" data-source="bs_nokkeltall" data-field="snitt_mmol" data-row="0">—</span> <small>mmol/L</small></div>
@@ -235,7 +236,7 @@
           <div class="sub">Uten <span class="dash-skeleton" data-source="bs_nokkeltall" data-field="feil_n" data-row="0">—</span> trolige feilmålinger</div>
         </div>
       </div>
-      <div class="vp-card" id="bs-kort">
+      <div class="vp-card" id="bs-kort" hidden>
         <h3>Sensorkurven</h3>
         <p class="vp-note">Avlest fra skjermbildene dine, omtrentlig (±0,3 mmol/L). Hull betyr at sensoren mistet signalet eller viste under skalaen. Appens målområde 3,9–10,0 er laget for diabetikere; for friske er 3,9–7,8 vanlig, og 3,3–3,9 om natten er ikke uvanlig på lite karbo.</p>
         <div class="vp-legend">
@@ -353,7 +354,7 @@
     </div>
   </section>
 
-  <p class="vp-foot">Kilder: Vektlogg – Odd Egil, 03-maling.md, 04-helse.md og 06-status.md. Blodsukkerkurven er avlest fra skjermbilder fra sensorappen og er omtrentlig. Alle kcal- og proteintall er anslag. Korreksjonen etter jogging (+0,9 kg) er målt én gang og revidert 20.10; korreksjonene for morgen før toalett (−0,3 kg) og kveld før måltid er anslag.</p>
+  <p class="vp-foot">Kilder: Vektlogg – Odd Egil, 03-maling.md, 04-helse.md og 06-status.md. Blodsukkerkurven er skjult til verdiene kan eksporteres fra sensorappen. Alle kcal- og proteintall er anslag. Korreksjonen etter jogging (+0,9 kg) er målt én gang og revidert 20.10; korreksjonene for morgen før toalett (−0,3 kg) og kveld før måltid er anslag.</p>
 </div>
 
 <script>
@@ -949,6 +950,7 @@
   const fmtKl = d3.utcFormat('%H:%M');
   const fmtDagKl = (s) => s.slice(8, 10) + '.' + s.slice(5, 7) + ' kl. ' + s.slice(11, 16);
   const BS_LO = 3.9, BS_HI = 7.8, BS_LAV = 3.0;
+  const BS_SKJULT = true; // kurven skjult til CGM-eksport (21.10)
 
   function fillBsKpis() {
     const s = state(['bs_nokkeltall']);
@@ -965,6 +967,7 @@
   function drawBs() {
     const el = document.getElementById('bs-graf');
     const H = 250;
+    if (BS_SKJULT) { el.replaceChildren(); return; }
     if (!guard(el, ['blodsukker'])) return;
     const rows = dash.data('blodsukker').data
       .filter((r) => r.kilde === 'CGM-kurve')

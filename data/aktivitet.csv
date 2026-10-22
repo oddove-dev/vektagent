@@ -22,3 +22,5 @@ dato,type,km,tid,snitt_per_km,merknad
 2026-10-18,Jogging,5.2,,,"Søndag. Tid ikke oppgitt, standardtur (~36 min, anslag)"
 2026-10-19,Jogging,5.2,,,"Tid ikke oppgitt, standardtur (~36 min, anslag)"
 2026-10-20,Gåtur,6.5,1:40:00,,"Lang gåtur, ~15:20 per km. Nesten dobbelt så lang som vanlig spasertur"
+2026-10-21,Jogging,5.21,34:56,6:42,"Bevegelsestid. Fastende, sterk negativ splitt: 7:47 / 6:48 / 6:19 / 6:52 / 5:53 / 5:57"
+2026-10-22,Jogging,5.24,34:21,6:33,"Bevegelsestid. Fastende. Raskeste 5 km i 2026 ifølge Strava. Splitter 7:24 / 6:23 / 6:17 / 6:57 / 6:00 / 5:30 (0,2 km)"

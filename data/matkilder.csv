@@ -30,7 +30,7 @@ dato,maaltid,kilde,hva,kcal,protein_g,grunnlag
 2026-10-03,Lunsj,Røkelaks,Røkelaks (mengde ikke oppgitt),290,21.3,resten av dagssummen
 2026-10-03,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-03,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-03,Kveld,Røkelaks,240 g røkelaks,540,39.6,fast verdi
+2026-10-03,Kveld,Røkelaks,240 g røkelaks,540,55.7,fast verdi
 2026-10-03,Kveld,Annet,25 g kokt lyr,20,5,anslag
 2026-10-04,Lunsj,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-04,Lunsj,Knekkebrød,4 knekkebrød,160,5,fast verdi
@@ -48,7 +48,7 @@ dato,maaltid,kilde,hva,kcal,protein_g,grunnlag
 2026-10-06,Lunsj,Egg,3 egg,216,18.9,fast verdi
 2026-10-06,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-06,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-06,Kveld,Røkelaks,139 g røkelaks,313,22.9,fast verdi
+2026-10-06,Kveld,Røkelaks,139 g røkelaks,313,32.2,fast verdi
 2026-10-06,Kveld,Egg,Ekstra egg,72,6.3,fast verdi
 2026-10-06,Kveld,Knekkebrød,Ekstra knekkebrød (antall anslått til 2),80,2.5,anslag
 2026-10-07,Lunsj,Kantineretter og kjøtt,Hyse,380,31.1,kcal fra loggen
@@ -69,47 +69,47 @@ dato,maaltid,kilde,hva,kcal,protein_g,grunnlag
 2026-10-09,Kveld,"Boksfisk (sardin, brisling)",1 boks sardin + 1 boks brisling,410,37.5,fast verdi
 2026-10-10,Lunsj,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-10,Lunsj,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-10,Lunsj,Røkelaks,200 g røkelaks,450,33.0,fast verdi
+2026-10-10,Lunsj,Røkelaks,200 g røkelaks,450,46.4,fast verdi
 2026-10-10,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-10,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-10,Kveld,Røkelaks,200 g røkelaks,450,33.0,fast verdi
+2026-10-10,Kveld,Røkelaks,200 g røkelaks,450,46.4,fast verdi
 2026-10-11,Lunsj,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-11,Lunsj,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-11,Lunsj,Røkelaks,200 g røkelaks,450,33.0,fast verdi
+2026-10-11,Lunsj,Røkelaks,200 g røkelaks,450,46.4,fast verdi
 2026-10-11,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-11,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-11,Kveld,Røkelaks,200 g røkelaks,450,33.0,fast verdi
+2026-10-11,Kveld,Røkelaks,200 g røkelaks,450,46.4,fast verdi
 2026-10-12,Lunsj,Egg,3 egg,216,18.9,fast verdi
 2026-10-12,Lunsj,Kantineretter og kjøtt,"Braiserte grisekjaker, potetpuré, rødkål",522,41.1,resten av dagssummen
 2026-10-12,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-12,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
 2026-10-12,Kveld,"Boksfisk (sardin, brisling)",1 boks sardin + 1 boks brisling,410,37.5,fast verdi
-2026-10-12,Kveld,Røkelaks,~50 g laks (rest),112,8.2,fast verdi
+2026-10-12,Kveld,Røkelaks,~50 g laks (rest),112,11.6,fast verdi
 2026-10-13,Lunsj,Kantineretter og kjøtt,"Braiserte grisekjaker, potetpuré, rødkål (~410 g)",650,47,kcal fra loggen
 2026-10-13,Lunsj,Egg,2 egg,144,12.6,fast verdi
 2026-10-13,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-13,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-13,Kveld,Røkelaks,200 g røkelaks,450,33.0,fast verdi
+2026-10-13,Kveld,Røkelaks,200 g røkelaks,450,46.4,fast verdi
 2026-10-14,Lunsj,Kantineretter og kjøtt,"Braiserte grisekjaker, potetpuré, rødkål (antatt som 13.10)",650,47,anslag
 2026-10-14,Lunsj,Egg,2 egg,144,12.6,fast verdi
 2026-10-14,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-14,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-14,Kveld,Røkelaks,167 g røkelaks,376,27.6,fast verdi
+2026-10-14,Kveld,Røkelaks,167 g røkelaks,376,38.7,fast verdi
 2026-10-15,Lunsj,Kantineretter og kjøtt,"Hyse, egg og potetstappe",430,30.6,kcal fra loggen
 2026-10-15,Lunsj,Egg,3 små egg,165,14.4,fast verdi
 2026-10-15,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-15,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-15,Kveld,Røkelaks,200 g røkelaks,450,33.0,fast verdi
+2026-10-15,Kveld,Røkelaks,200 g røkelaks,450,46.4,fast verdi
 2026-10-16,Lunsj,Kantineretter og kjøtt,To skåler tapas (eget anslag),500,25,kcal fra loggen
 2026-10-16,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-16,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-16,Kveld,Røkelaks,200 g røkelaks,450,33.0,fast verdi
+2026-10-16,Kveld,Røkelaks,200 g røkelaks,450,46.4,fast verdi
 2026-10-17,Lunsj,Knekkebrød,4 knekkebrød,160,5,fast verdi
 2026-10-17,Lunsj,Annet,Erter/gulrot,50,3,anslag
 2026-10-17,Lunsj,Kantineretter og kjøtt,210 g tørrmodnet entrecôte med fett,762,41.7,resten av dagssummen
 2026-10-17,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-17,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-17,Kveld,Røkelaks,190 g røkelaks,428,31.4,fast verdi
+2026-10-17,Kveld,Røkelaks,190 g røkelaks,428,44.1,fast verdi
 2026-10-18,Lunsj,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-18,Lunsj,Knekkebrød,4 knekkebrød,160,5,fast verdi
 2026-10-18,Lunsj,"Boksfisk (sardin, brisling)",1 boks sardin + 1 boks brisling,410,37.5,fast verdi
@@ -125,4 +125,14 @@ dato,maaltid,kilde,hva,kcal,protein_g,grunnlag
 2026-10-20,Lunsj,Egg,2 egg,144,12.6,fast verdi
 2026-10-20,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
 2026-10-20,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
-2026-10-20,Kveld,Røkelaks,228 g røkelaks,513,37.6,fast verdi
+2026-10-20,Kveld,Røkelaks,228 g røkelaks,513,52.9,fast verdi
+2026-10-21,Lunsj,Kantineretter og kjøtt,"Fiskekaker, gressløkstuede poteter og råkostsalat (kantinemenyen)",403,22,kcal fra loggen
+2026-10-21,Lunsj,Egg,3 egg,216,18.9,fast verdi
+2026-10-21,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
+2026-10-21,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
+2026-10-21,Kveld,Røkelaks,189 g røkelaks,425,43.8,fast verdi
+2026-10-22,Lunsj,Kantineretter og kjøtt,"Fiskekaker, gressløkstuede poteter og råkostsalat (kantinemenyen)",403,22,kcal fra loggen
+2026-10-22,Lunsj,Egg,3 egg,216,18.9,fast verdi
+2026-10-22,Kveld,Hvitost,80 g hvitost,280,22,fast verdi
+2026-10-22,Kveld,Knekkebrød,4 knekkebrød,160,5,fast verdi
+2026-10-22,Kveld,Røkelaks,189 g røkelaks,425,43.8,fast verdi
