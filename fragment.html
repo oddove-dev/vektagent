@@ -18,6 +18,10 @@
 .vp-kpi .good { color: var(--color-ok); }
 .vp-kpi [data-dash-source-state=empty] { color: transparent; }
 .vp [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.vp-trend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: var(--cds-gap-md); }
+.vp-trend-grid h4 { font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); margin: 0; color: var(--color-fg); }
+.vp-trend-grid .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.vp-sub-h { font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-md) 0 0; }
 .vp-btns { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); margin: var(--cds-gap-sm) 0; }
 .vp-btns button { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
 .vp-btns button[aria-pressed=true] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
@@ -534,6 +538,49 @@
     },
   });
 
+  dash.calc('natt_trend', {
+    inputs: ['polar_dogn'],
+    title: 'Natt for natt',
+    description: 'Søvn, søvnscore, nattpuls, HRV og pust per natt fra klokka, og hudtemperaturen som avvik fra snittet av inntil 28 netter før.',
+    fn: (polar_dogn) => {
+      const n = polar_dogn.filter((r) => r.sovn_t !== '' && r.sovn_t != null).sort((a, b) => (a.dato < b.dato ? -1 : 1));
+      const v = (x) => (x === '' || x == null ? null : Number(x));
+      return n.map((r, i) => {
+        const for_ = n.slice(Math.max(0, i - 28), i).map((q) => v(q.hudtemp_natt)).filter((x) => x != null);
+        const t = v(r.hudtemp_natt);
+        return {
+          dato: r.dato, sovn_t: v(r.sovn_t_justert) ?? v(r.sovn_t), sovnscore: v(r.sovnscore), nattpuls: v(r.nattpuls), hrv_rmssd: v(r.hrv_rmssd),
+          pust_per_min: v(r.pust_per_min),
+          hudtemp_avvik: t != null && for_.length ? Math.round((t - for_.reduce((s, x) => s + x, 0) / for_.length) * 100) / 100 : null,
+        };
+      });
+    },
+  });
+
+  dash.calc('sovn_vurdering', {
+    inputs: ['polar_dogn'],
+    title: 'Søvnkvalitet, vurdering',
+    description: 'Den valgte natta (siste hvis ingen er valgt) vurdert mot tommelfingerregler for voksne over 50: søvntid (rettet innsovning), søvneffektivitet, andel dyp søvn, andel REM og antall lange oppvåkninger.',
+    fn: (polar_dogn) => {
+      const n = polar_dogn.filter((r) => r.sovn_t !== '' && r.sovn_t != null).sort((a, b) => (a.dato < b.dato ? -1 : 1));
+      if (!n.length) return [];
+      const v = (x) => (x === '' || x == null ? null : Number(x));
+      const vurd = (x, bra, ok, hoyBra = true) => (x == null ? '–' : hoyBra ? (x >= bra ? '✓ Bra' : x >= ok ? '~ Ok' : '! Lav') : (x <= bra ? '✓ Bra' : x <= ok ? '~ Ok' : '! Mange'));
+      return n.flatMap((r) => {
+        const t = v(r.sovn_t_justert) ?? v(r.sovn_t);
+        const tt = t == null ? '–' : Math.floor(t) + ' t ' + String(Math.round((t % 1) * 60)).padStart(2, '0') + ' min';
+        return [
+          { dato: r.dato, del: 'Søvntid', verdi: tt, normalt: '7–9 t', vurdering: vurd(t, 7, 6) },
+          { dato: r.dato, del: 'Søvneffektivitet', verdi: v(r.effektivitet_pst) == null ? '–' : Math.round(v(r.effektivitet_pst)) + ' %', normalt: 'over 85 % av natta sovende', vurdering: vurd(v(r.effektivitet_pst), 90, 85) },
+          { dato: r.dato, del: 'Dyp søvn', verdi: v(r.dyp_pst) == null ? '–' : Math.round(v(r.dyp_pst)) + ' % (' + r.dyp_min + ' min)', normalt: '10–20 % (synker med alderen)', vurdering: vurd(v(r.dyp_pst), 12, 8) },
+          { dato: r.dato, del: 'REM (drømmesøvn)', verdi: v(r.rem_pst) == null ? '–' : Math.round(v(r.rem_pst)) + ' % (' + r.rem_min + ' min)', normalt: '18–25 %', vurdering: vurd(v(r.rem_pst), 18, 14) },
+          { dato: r.dato, del: 'Lange oppvåkninger', verdi: r.avbrudd_lange === '' ? '–' : String(r.avbrudd_lange), normalt: 'noen få er normalt', vurdering: vurd(v(r.avbrudd_lange), 3, 6, false) },
+          { dato: r.dato, del: 'Søvnsykluser', verdi: r.sykluser === '' ? '–' : String(r.sykluser), normalt: '4–6 per natt', vurdering: vurd(v(r.sykluser), 4, 3) },
+        ];
+      });
+    },
+  });
+
   dash.calc('sovn_siste', {
     inputs: ['polar_dogn'],
     title: 'Siste natt fra klokka',
@@ -546,8 +593,8 @@
       const m = (x) => (x === '' || x == null ? null : Math.floor(Number(x) / 60) + ' t ' + String(Number(x) % 60).padStart(2, '0'));
       return [{
         dato: r.dato.slice(8, 10) + '.' + r.dato.slice(5, 7),
-        sovn: t(Number(r.sovn_t)),
-        tid: r.sovn_start + '–' + r.sovn_slutt,
+        sovn: t(Number(r.sovn_t_justert !== '' && r.sovn_t_justert != null ? r.sovn_t_justert : r.sovn_t)),
+        tid: (r.egen_start || r.sovn_start) + '–' + r.sovn_slutt,
         sovnscore: r.sovnscore === '' ? null : Math.round(Number(r.sovnscore)),
         dyp: m(r.dyp_min), rem: m(r.rem_min),
         nattpuls: r.nattpuls === '' ? null : Math.round(Number(r.nattpuls)),
@@ -1061,6 +1108,318 @@
     });
   }
 
+  // ---------- Søvnkvalitet ----------
+  const SK = { natt: null };
+  const FASEFARGE = () => ({ 'Dyp': C()[1], 'REM': C()[3], 'Lett': C()[5], 'Våken': C()[0], 'Utenfor Polars natt': MUTED });
+  function drawSovnkval() {
+    const el = document.getElementById('hypno-graf');
+    document.getElementById('sovnkval-kort').hidden = dash.data('polar_hypnogram').status === 'missing';
+    const lg = document.getElementById('sk-legend');
+    lg.replaceChildren();
+    const ff = FASEFARGE();
+    for (const [k, c] of Object.entries(ff)) { const sp = document.createElement('span'), i = document.createElement('i'); i.className = 'vp-sw bar'; i.style.setProperty('--sw', c); if (k.startsWith('Utenfor')) i.style.opacity = '0.4'; sp.append(i, document.createTextNode(k === 'Utenfor Polars natt' ? 'Sov, men utenfor Polars natt' : k)); lg.append(sp); }
+    const tb = document.querySelector('#sk-tabell tbody');
+    tb.replaceChildren();
+    if (!guard(el, ['polar_hypnogram'])) return;
+    const all = dash.data('polar_hypnogram').data;
+    const netter = [...new Set(all.map((r) => r.dato))].sort();
+    if (!netter.length) { el.replaceChildren(); return; }
+    if (!SK.natt || !netter.includes(SK.natt)) SK.natt = netter[netter.length - 1];
+    const bt = document.getElementById('sk-netter');
+    bt.replaceChildren();
+    for (const d of netter.slice(-7)) {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Natt til ' + fmtD(pd(d));
+      b.setAttribute('aria-pressed', String(d === SK.natt));
+      b.addEventListener('click', () => { SK.natt = d; drawSovnkval(); });
+      bt.append(b);
+    }
+    // vurderingstabell for valgt natt
+    const vr = dash.data('sovn_vurdering').status === 'ok' ? dash.data('sovn_vurdering').data.filter((r) => r.dato === SK.natt) : [];
+    for (const r of vr) {
+      const tr = document.createElement('tr'); tr.dataset.key = r.del;
+      for (const [f, num] of [['del'], ['verdi', 1], ['normalt'], ['vurdering']]) { const td = document.createElement('td'); if (num) td.className = 'num'; td.textContent = r[f]; tr.append(td); }
+      tb.append(tr);
+    }
+    // hypnogram
+    const rows = all.filter((r) => r.dato === SK.natt).map((r) => ({ a: new Date(r.fra + ':00Z'), b: new Date(r.til + ':00Z'), fase: r.fase, min: Number(r.min) }));
+    const nivaa = { 'Våken': 0, 'REM': 1, 'Lett': 2, 'Dyp': 3, 'Utenfor Polars natt': 2 };
+    const navn = ['Våken', 'REM', 'Lett', 'Dyp'];
+    const H = 190;
+    const { W, svg, tip } = setup(el, H);
+    const ml = textW(svg, navn, 'vp-tick') + 12, mr = 10, mt = 8, mb = 24;
+    const x = d3.scaleUtc([d3.min(rows, (r) => r.a), d3.max(rows, (r) => r.b)], [ml, W - mr]);
+    const y = d3.scaleBand(navn, [mt, H - mb]).padding(0.15);
+    for (const n of navn) {
+      svg.append('line').attr('class', 'vp-grid-line').attr('x1', ml).attr('x2', W - mr).attr('y1', y(n) + y.bandwidth() / 2).attr('y2', y(n) + y.bandwidth() / 2);
+      svg.append('text').attr('class', 'vp-tick').attr('x', ml - 6).attr('y', y(n) + y.bandwidth() / 2).attr('dy', '0.32em').attr('text-anchor', 'end').text(n);
+    }
+    for (const r of rows) {
+      const n = navn[nivaa[r.fase]] || 'Lett';
+      const utenfor = r.fase.startsWith('Utenfor');
+      svg.append('rect').attr('x', x(r.a)).attr('y', y(n)).attr('width', Math.max(1, x(r.b) - x(r.a))).attr('height', y.bandwidth()).attr('rx', 2)
+        .style('fill', ff[r.fase] || MUTED).style('fill-opacity', utenfor ? 0.35 : 1)
+        .style('stroke', utenfor ? 'var(--color-fg-muted)' : 'none').style('stroke-dasharray', utenfor ? '3 3' : null);
+    }
+    const tikk = x.ticks(d3.utcHour.every(W > 520 ? 1 : 2));
+    svg.append('g').selectAll('text').data(tikk).join('text').attr('class', 'vp-tick').attr('x', (d) => x(d)).attr('y', H - 6).attr('text-anchor', 'middle').text((d) => d3.utcFormat('%H:%M')(d));
+    const hm = d3.utcFormat('%H:%M');
+    svg.append('rect').attr('x', ml).attr('y', 0).attr('width', W - ml - mr).attr('height', H - mb).style('fill', 'transparent').style('touch-action', 'pan-y')
+      .on('pointermove pointerdown', (ev) => {
+        const t = x.invert(d3.pointer(ev)[0]);
+        const r = rows.find((q) => q.a <= t && t < q.b && !q.fase.startsWith('Utenfor')) || rows.find((q) => q.a <= t && t < q.b);
+        if (!r) { hideTip(tip); return; }
+        showTip(tip, el, x(t), hm(r.a) + '–' + hm(r.b), [{ color: ff[r.fase], name: r.fase === 'Utenfor Polars natt' ? 'Sov ifølge puls og bevegelse' : r.fase, value: f0(r.min) + ' min' }]);
+      })
+      .on('pointerleave', () => hideTip(tip));
+    drawFaser();
+  }
+
+  function drawFaser() {
+    const el = document.getElementById('faser-graf');
+    if (!guard(el, ['polar_dogn'])) return;
+    const ff = FASEFARGE();
+    const deler = [['dyp_min', 'Dyp'], ['rem_min', 'REM'], ['lett_min', 'Lett'], ['vaken_min', 'Våken'], ['justert_min', 'Utenfor Polars natt']];
+    const rows = dash.data('polar_dogn').data.filter((r) => has(r.sovn_t)).sort((a, b) => (a.dato < b.dato ? -1 : 1)).slice(-14)
+      .map((r) => ({ dato: r.dato, ...Object.fromEntries(deler.map(([f]) => [f, Number(r[f]) || 0])) }));
+    if (!rows.length) { el.replaceChildren(); return; }
+    const rh = 22, H = rows.length * rh + 26;
+    const { W, svg, tip } = setup(el, H);
+    const ml = textW(svg, ['00.00'], 'vp-tick') + 12, mr = 10;
+    const tot = (r) => deler.reduce((s, [f]) => s + r[f], 0);
+    const x = d3.scaleLinear([0, Math.max(540, d3.max(rows, tot))], [ml, W - mr]);
+    const y = d3.scaleBand(rows.map((r) => r.dato), [4, H - 22]).padding(0.2);
+    for (const t of d3.range(0, x.domain()[1] + 1, 120)) {
+      svg.append('line').attr('class', 'vp-grid-line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', 4).attr('y2', H - 22);
+      svg.append('text').attr('class', 'vp-tick').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t / 60 + ' t');
+    }
+    for (const r of rows) {
+      svg.append('text').attr('class', 'vp-tick').attr('x', ml - 6).attr('y', y(r.dato) + y.bandwidth() / 2).attr('dy', '0.32em').attr('text-anchor', 'end').text(fmtD(pd(r.dato)));
+      let base = 0;
+      for (const [f, n] of deler) {
+        const v = r[f];
+        if (!v) continue;
+        svg.append('rect').attr('x', x(base)).attr('y', y(r.dato)).attr('width', Math.max(0, x(base + v) - x(base) - 2)).attr('height', y.bandwidth())
+          .style('fill', ff[n]).style('fill-opacity', n.startsWith('Utenfor') ? 0.35 : 1);
+        base += v;
+      }
+    }
+    svg.append('g').selectAll('rect.hit').data(rows).join('rect').attr('x', ml).attr('y', (r) => y(r.dato)).attr('width', W - ml - mr).attr('height', y.bandwidth())
+      .style('fill', 'transparent').style('touch-action', 'pan-y')
+      .on('pointerenter pointerdown', (ev, r) => showTip(tip, el, d3.pointer(ev, svg.node())[0], 'Natt til ' + fmtD(pd(r.dato)),
+        deler.filter(([f]) => r[f]).map(([f, n]) => ({ color: ff[n], name: n === 'Utenfor Polars natt' ? 'Sov utenfor Polars natt' : n, value: f0(r[f]) + ' min' }))))
+      .on('pointerleave', () => hideTip(tip));
+  }
+
+  // ---------- Helse fra klokka ----------
+  const DP = { dag: null, wired: false };
+  function drawDognpuls() {
+    const el = document.getElementById('dognpuls-graf');
+    const card = document.getElementById('dognpuls-kort');
+    card.hidden = dash.data('polar_dognpuls').status === 'missing';
+    if (!guard(el, ['polar_dognpuls'])) return;
+    const all = dash.data('polar_dognpuls').data;
+    const dager = [...new Set(all.map((r) => r.dato))].sort();
+    if (!dager.length) { el.replaceChildren(); return; }
+    if (!DP.dag || !dager.includes(DP.dag)) DP.dag = dager[dager.length - 1];
+    const bt = document.getElementById('dp-dager');
+    bt.replaceChildren();
+    for (const d of dager.slice(-7)) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = fmtD(pd(d));
+      b.setAttribute('aria-pressed', String(d === DP.dag));
+      b.addEventListener('click', () => { DP.dag = d; drawDognpuls(); });
+      bt.append(b);
+    }
+    const lg = document.getElementById('dp-legend');
+    lg.replaceChildren();
+    const lgAdd = (cls, color, txt) => { const sp = document.createElement('span'), i = document.createElement('i'); i.className = 'vp-sw ' + cls; i.style.setProperty('--sw', color); sp.append(i, document.createTextNode(txt)); lg.append(sp); };
+    lgAdd('line', C()[0], 'Puls, snitt per 5 min');
+    lgAdd('line light', C()[0], 'Høyeste per 5 min');
+    lgAdd('area', MUTED, 'Søvn');
+    lgAdd('span', C()[0], 'Treningsøkt');
+    const tm = (s) => Number(s.slice(0, 2)) * 60 + Number(s.slice(3, 5));
+    const rows = all.filter((r) => r.dato === DP.dag).map((r) => ({ m: tm(r.tid), v: Number(r.puls), maks: Number(r.maks), tid: r.tid })).sort((a, b) => a.m - b.m);
+    const H = 240;
+    const { W, svg, tip } = setup(el, H);
+    const lo = Math.floor(Math.min(40, d3.min(rows, (r) => r.v)) / 20) * 20, hi = Math.ceil(Math.max(120, d3.max(rows, (r) => r.maks)) / 20) * 20;
+    const yt = d3.range(lo, hi + 1, 20);
+    const ml = textW(svg, yt.map(String), 'vp-tick') + 12, mr = 10, mt = 10, mb = 24;
+    const x = d3.scaleLinear([0, 1440], [ml, W - mr]), y = d3.scaleLinear([lo, hi], [H - mb, mt]);
+    // søvn: natta som slutter denne dagen og natta som starter denne kvelden
+    const sv = dash.data('polar_dogn').status === 'ok' ? dash.data('polar_dogn').data : [];
+    const band = (m0, m1, fill, op) => svg.append('rect').attr('x', x(Math.max(0, m0))).attr('y', mt).attr('width', Math.max(0, x(Math.min(1440, m1)) - x(Math.max(0, m0)))).attr('height', H - mb - mt).style('fill', fill).style('fill-opacity', op);
+    for (const r of sv) {
+      if (!r.sovn_start || !r.sovn_slutt) continue;
+      const s0 = tm(r.egen_start || r.sovn_start), s1 = tm(r.sovn_slutt);
+      if (r.dato === DP.dag) band(s0 > s1 ? 0 : s0, s1, MUTED, 0.22);
+      const neste = new Date(pd(DP.dag).getTime() + 864e5).toISOString().slice(0, 10);
+      if (r.dato === neste && s0 > s1) band(s0, 1440, MUTED, 0.22);
+    }
+    const tu = dash.data('strava_turer').status === 'ok' ? dash.data('strava_turer').data : [];
+    for (const r of tu.filter((q) => q.dato === DP.dag && q.klokkeslett)) {
+      const m0 = tm(r.klokkeslett);
+      band(m0, m0 + (Number(r.tid_s) || 0) / 60 + 1, C()[0], 0.14);
+    }
+    yAxis(svg, y, yt, String, ml, W - mr);
+    svg.append('g').selectAll('text').data(d3.range(0, 1441, 180)).join('text').attr('class', 'vp-tick')
+      .attr('x', (m) => x(m)).attr('y', H - 6).attr('text-anchor', (m) => (m === 0 ? 'start' : m === 1440 ? 'end' : 'middle'))
+      .text((m) => String(Math.floor(m / 60) % 24).padStart(2, '0') + ':00');
+    // brudd i linja ved hull over 20 min (klokka av)
+    const line = d3.line().defined((r, i, a) => true).x((r) => x(r.m)).y((r) => y(r.v));
+    const biter = [];
+    let cur = [];
+    for (const r of rows) { if (cur.length && r.m - cur[cur.length - 1].m > 20) { biter.push(cur); cur = []; } cur.push(r); }
+    if (cur.length) biter.push(cur);
+    const lineMaks = d3.line().x((r) => x(r.m)).y((r) => y(r.maks));
+    for (const b of biter) svg.append('path').datum(b).attr('class', 'vp-line').style('stroke', C()[0]).style('stroke-opacity', 0.35).style('stroke-width', 1.5).attr('d', lineMaks);
+    for (const b of biter) svg.append('path').datum(b).attr('class', 'vp-line').style('stroke', C()[0]).attr('d', line);
+    const mx = rows[d3.maxIndex(rows, (r) => r.maks)], mn = rows[d3.minIndex(rows, (r) => r.v)];
+    for (const [r, t, dy] of [[mx, 'Høyest ' + mx.maks, y(mx.maks) < mt + 14 ? 14 : -8], [mn, 'Lavest ' + mn.v, y(mn.v) > H - mb - 22 ? -8 : 16]]) {
+      if (r === mn && Math.abs(x(mn.m) - x(mx.m)) < 90 && Math.abs(y(mn.v) - y(mx.v)) < 18) continue;
+      const right = x(r.m) > (ml + W) / 2;
+      svg.append('text').attr('class', 'vp-lab').attr('x', x(r.m) + (right ? -6 : 6)).attr('y', y(r === mx ? r.maks : r.v) + dy).attr('text-anchor', right ? 'end' : 'start')
+        .style('paint-order', 'stroke').style('stroke', 'var(--color-panel)').style('stroke-width', 4).text(t);
+    }
+    const cross = svg.append('line').style('stroke', 'var(--color-border-line)').style('display', 'none').attr('y1', mt).attr('y2', H - mb);
+    const dot = svg.append('circle').attr('r', 4).style('fill', C()[0]).style('stroke', 'var(--color-panel)').style('stroke-width', 2).style('display', 'none');
+    svg.append('rect').attr('x', ml).attr('y', 0).attr('width', W - ml - mr).attr('height', H - mb).style('fill', 'transparent').style('touch-action', 'pan-y')
+      .on('pointermove pointerdown', (ev) => {
+        const [px] = d3.pointer(ev);
+        const m = x.invert(px);
+        const r = rows[d3.minIndex(rows, (q) => Math.abs(q.m - m))];
+        if (!r || Math.abs(r.m - m) > 15) { cross.style('display', 'none'); dot.style('display', 'none'); hideTip(tip); return; }
+        cross.attr('x1', x(r.m)).attr('x2', x(r.m)).style('display', null);
+        dot.attr('cx', x(r.m)).attr('cy', y(r.v)).style('display', null);
+        showTip(tip, el, x(r.m), fmtD(pd(DP.dag)) + ' kl. ' + r.tid, [
+          { color: C()[0], name: 'Puls (snitt 5 min)', value: String(r.v) },
+          ...(r.maks > r.v ? [{ name: 'Høyeste', value: String(r.maks) }] : []),
+        ]);
+      })
+      .on('pointerleave', () => { cross.style('display', 'none'); dot.style('display', 'none'); hideTip(tip); });
+  }
+
+  function drawTrend() {
+    const el = document.getElementById('trend-graf');
+    if (!guard(el, ['polar_dogn'])) return;
+    const rows = dash.data('natt_trend').data;
+    if (!rows.length) { el.replaceChildren(); return; }
+    const spek = [
+      { f: 'sovn_t', t: 'Søvn (justert)', u: 't', fmt: (v) => Math.floor(v) + ':' + String(Math.round((v % 1) * 60)).padStart(2, '0'), hint: 'Høyere er mer søvn' },
+      { f: 'sovnscore', t: 'Søvnscore', u: '', fmt: (v) => f0(v), hint: 'Av 100' },
+      { f: 'nattpuls', t: 'Nattpuls', u: 'slag/min', fmt: (v) => f0(v), hint: 'Lavere er bedre restitusjon' },
+      { f: 'hrv_rmssd', t: 'Pulsvariasjon (HRV)', u: 'ms', fmt: (v) => f0(v), hint: 'Høyere er bedre' },
+      { f: 'pust_per_min', t: 'Pust', u: 'per min', fmt: (v) => f1(v), hint: 'Stabil er normalt' },
+      { f: 'hudtemp_avvik', t: 'Hudtemperatur, avvik', u: '°C', fmt: (v) => (v > 0 ? '+' : '') + nb.format('.2f')(v), hint: 'Mot snittet av nettene før', ref: 0 },
+    ];
+    el.replaceChildren();
+    const kort = [];
+    for (const sp of spek) {
+      const box = document.createElement('div');
+      const ch = document.createElement('div'); ch.className = 'vp-chart'; ch.style.minHeight = '120px';
+      kort.push([sp, box, ch]);
+      el.append(box);
+    }
+    for (const [sp, box, ch] of kort) {
+      const pts = rows.filter((r) => r[sp.f] != null).map((r) => ({ d: pd(r.dato), dato: r.dato, v: r[sp.f] }));
+      const h = document.createElement('h4'); h.textContent = sp.t;
+      const sub = document.createElement('div'); sub.className = 'sub';
+      const sist = pts[pts.length - 1];
+      sub.textContent = sist ? 'Siste: ' + sp.fmt(sist.v) + (sp.u ? ' ' + sp.u : '') + ' · ' + sp.hint : 'Ingen data ennå';
+      box.append(h, sub, ch);
+      if (!pts.length) continue;
+      const H = 120;
+      const { W, svg, tip } = setup(ch, H);
+      let [lo, hi] = d3.extent(pts, (p) => p.v);
+      if (sp.ref != null) { lo = Math.min(lo, sp.ref); hi = Math.max(hi, sp.ref); }
+      const pad = (hi - lo) * 0.25 || Math.abs(hi) * 0.1 || 1;
+      const y = d3.scaleLinear([lo - pad, hi + pad], [H - 20, 8]).nice(3);
+      const yt = y.ticks(3);
+      const ml = textW(svg, yt.map(sp.fmt), 'vp-tick') + 10, mr = 10;
+      const x = pts.length > 1 ? d3.scaleUtc(d3.extent(pts, (p) => p.d), [ml + 8, W - mr - 8]) : () => (ml + W - mr) / 2;
+      yAxis(svg, y, yt, sp.fmt, ml, W - mr);
+      if (sp.ref != null) svg.append('line').attr('x1', ml).attr('x2', W - mr).attr('y1', y(sp.ref)).attr('y2', y(sp.ref)).style('stroke', 'var(--cds-chart-reference)').style('stroke-dasharray', '3 3');
+      if (pts.length > 1) svg.append('path').datum(pts).attr('class', 'vp-line').style('stroke', C()[0]).attr('d', d3.line().x((p) => x(p.d)).y((p) => y(p.v)));
+      svg.append('g').selectAll('circle').data(pts).join('circle').attr('class', 'vp-ring').attr('cx', (p) => x(p.d)).attr('cy', (p) => y(p.v)).attr('r', 4).style('fill', C()[0]);
+      const xs = pts.length > 1 ? [pts[0], pts[pts.length - 1]] : [pts[0]];
+      svg.append('g').selectAll('text').data(xs).join('text').attr('class', 'vp-tick').attr('x', (p) => x(p.d)).attr('y', H - 4)
+        .attr('text-anchor', (p, i) => (xs.length > 1 ? (i ? 'end' : 'start') : 'middle')).text((p) => fmtD(p.d));
+      svg.append('g').selectAll('rect').data(pts).join('rect').attr('x', (p) => x(p.d) - 14).attr('y', 0).attr('width', 28).attr('height', H - 18)
+        .style('fill', 'transparent').style('touch-action', 'pan-y')
+        .on('pointerenter pointerdown', (ev, p) => showTip(tip, ch, x(p.d), 'Natt til ' + fmtD(p.d), [{ color: C()[0], name: sp.t, value: sp.fmt(p.v) + (sp.u ? ' ' + sp.u : '') }]))
+        .on('pointerleave', () => hideTip(tip));
+    }
+  }
+
+  function drawAkt() {
+    const se = document.getElementById('skritt-graf'), ae = document.getElementById('akt-graf');
+    const okS = guard(se, ['polar_dogn']), okA = guard(ae, ['polar_dogn']);
+    const lg = document.getElementById('akt-legend');
+    const kl = [
+      { f: 'akt_stille_min', t: 'Stillesittende', c: MUTED },
+      { f: 'akt_lett_min', t: 'Lett', c: C()[1] },
+      { f: 'akt_moderat_min', t: 'Moderat', c: C()[2] },
+      { f: 'akt_hard_min', t: 'Hard', c: C()[0] },
+    ];
+    lg.replaceChildren();
+    for (const k of kl) { const sp = document.createElement('span'), i = document.createElement('i'); i.className = 'vp-sw bar'; i.style.setProperty('--sw', k.c); sp.append(i, document.createTextNode(k.t)); lg.append(sp); }
+    if (!okS || !okA) return;
+    const rows = dash.data('polar_dogn').data.filter((r) => r.skritt !== '' && r.skritt != null)
+      .map((r) => ({ dato: r.dato, skritt: Number(r.skritt), delvis: Number(r.dekning_t) < 23.5, ...Object.fromEntries(kl.map((k) => [k.f, Number(r[k.f]) || 0])), varsler: r.stillevarsler }))
+      .sort((a, b) => (a.dato < b.dato ? -1 : 1)).slice(-14);
+    if (!rows.length) { se.replaceChildren(); ae.replaceChildren(); return; }
+    const H = 200, mb = 24, mt = 10;
+    {
+      const { W, svg, tip } = setup(se, H);
+      const hi = Math.max(10000, d3.max(rows, (r) => r.skritt));
+      const y = d3.scaleLinear([0, hi], [H - mb, mt]).nice(4);
+      const yt = y.ticks(4);
+      const ml = textW(svg, yt.map((v) => f0(v)), 'vp-tick') + 12, mr = 6;
+      const x = d3.scaleBand(rows.map((r) => r.dato), [ml, W - mr]).padding(0.25);
+      yAxis(svg, y, yt, (v) => f0(v), ml, W - mr);
+      svg.append('line').attr('x1', ml).attr('x2', W - mr).attr('y1', y(10000)).attr('y2', y(10000)).style('stroke', 'var(--cds-chart-reference)').style('stroke-dasharray', '3 3');
+      svg.append('g').selectAll('path').data(rows).join('path').attr('d', (r) => barPath(x(r.dato), y(r.skritt), x.bandwidth(), y(0) - y(r.skritt), 4))
+        .style('fill', C()[0]).style('fill-opacity', (r) => (r.delvis ? 0.35 : 1));
+      bandLabels(svg, x, rows.map((r) => r.dato), H - 6);
+      svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.dato)).attr('y', 0).attr('width', x.bandwidth()).attr('height', H - mb)
+        .style('fill', 'transparent').style('touch-action', 'pan-y')
+        .on('pointerenter pointerdown', (ev, r) => showTip(tip, se, x(r.dato) + x.bandwidth() / 2, fmtD(pd(r.dato)) + (r.delvis ? ' (ikke ferdig)' : ''), [
+          { color: C()[0], name: 'Skritt', value: f0(r.skritt) }, { name: 'Strek', value: '10 000' }]))
+        .on('pointerleave', () => hideTip(tip));
+    }
+    {
+      const { W, svg, tip } = setup(ae, H);
+      const sum = (r) => kl.reduce((s, k) => s + r[k.f], 0);
+      const maxT = Math.max(1, Math.ceil((d3.max(rows, sum) || 60) / 60));
+      const steg = maxT > 12 ? 4 : maxT > 6 ? 2 : 1;
+      const y = d3.scaleLinear([0, Math.ceil(maxT / steg) * steg * 60], [H - mb, mt]);
+      const yt = d3.range(0, Math.ceil(maxT / steg) * steg + 1, steg).map((t) => t * 60);
+      const fmtT = (m) => (m === 0 ? '0' : m % 60 === 0 && m >= 60 ? m / 60 + ' t' : m >= 60 ? Math.floor(m / 60) + ' t ' + Math.round(m % 60) + ' min' : f0(m) + ' min');
+      const ml = textW(svg, yt.map(fmtT), 'vp-tick') + 12, mr = 6;
+      const x = d3.scaleBand(rows.map((r) => r.dato), [ml, W - mr]).padding(0.25);
+      yAxis(svg, y, yt, fmtT, ml, W - mr);
+      for (const r of rows) {
+        let base = 0;
+        kl.forEach((k, i) => {
+          const v = r[k.f];
+          if (!v) return;
+          const y0 = y(base), y1 = y(base + v);
+          svg.append('rect').attr('x', x(r.dato)).attr('y', y1).attr('width', x.bandwidth()).attr('height', Math.max(0, y0 - y1 - 2))
+            .attr('rx', i === kl.length - 1 ? 3 : 0).style('fill', k.c).style('fill-opacity', r.delvis ? 0.35 : 1);
+          base += v;
+        });
+      }
+      bandLabels(svg, x, rows.map((r) => r.dato), H - 6);
+      svg.append('g').selectAll('rect.hit').data(rows).join('rect').attr('x', (r) => x(r.dato)).attr('y', 0).attr('width', x.bandwidth()).attr('height', H - mb)
+        .style('fill', 'transparent').style('touch-action', 'pan-y')
+        .on('pointerenter pointerdown', (ev, r) => showTip(tip, ae, x(r.dato) + x.bandwidth() / 2, fmtD(pd(r.dato)) + (r.delvis ? ' (ikke ferdig)' : ''), [
+          ...kl.slice().reverse().map((k) => ({ color: k.c, name: k.t, value: fmtT(r[k.f]) })),
+          ...(has(r.varsler) ? [{ note: true, name: 'Varsler om å reise seg: ' + r.varsler }] : []),
+        ]))
+        .on('pointerleave', () => hideTip(tip));
+    }
+  }
+
   function drawBakke() {
     const el = document.getElementById('bakke-graf');
     const H = 220;
@@ -1551,8 +1910,8 @@
     ], null, 'okt_segment');
     fillTable('#sovn-tabell', 'polar_dogn', [
       { f: 'dato', fmt: date },
-      { f: 'sovn_t', num: true, fmt: (v) => (has(v) ? Math.floor(Number(v)) + ':' + String(Math.round((Number(v) % 1) * 60)).padStart(2, '0') : '–') },
-      { f: 'sovn_start', fmt: dash_ },
+      { f: 'sovn_t_justert', num: true, fmt: (v, r) => { const x = has(v) ? v : r.sovn_t; return has(x) ? Math.floor(Number(x)) + ':' + String(Math.round((Number(x) % 1) * 60)).padStart(2, '0') : '–'; } },
+      { f: 'sovn_start', fmt: (v, r) => (has(r.egen_start) ? r.egen_start + ' *' : dash_(v)) },
       { f: 'sovn_slutt', fmt: dash_ },
       { f: 'sovnscore', num: true, fmt: n0 },
       { f: 'dyp_min', num: true, fmt: n0 },
@@ -1577,6 +1936,10 @@
     fillStKpis();
     fillCalcKpis('#puls-kpis', 'polar_siste');
     fillCalcKpis('#sovn-kpis', 'sovn_siste');
+    drawSovnkval();
+    drawDognpuls();
+    drawTrend();
+    drawAkt();
     drawBakke();
     drawSplit();
     drawRute();
