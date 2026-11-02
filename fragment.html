@@ -1113,7 +1113,6 @@
   const FASEFARGE = () => ({ 'Dyp': C()[1], 'REM': C()[3], 'Lett': C()[5], 'Våken': C()[0], 'Utenfor Polars natt': MUTED });
   function drawSovnkval() {
     const el = document.getElementById('hypno-graf');
-    if (!el || !document.getElementById('sovnkval-kort')) return;
     document.getElementById('sovnkval-kort').hidden = dash.data('polar_hypnogram').status === 'missing';
     const lg = document.getElementById('sk-legend');
     lg.replaceChildren();
@@ -1926,32 +1925,30 @@
   }
 
   let jumped = false;
-  // Hver del tegnes for seg: feiler én (f.eks. et kort som ikke finnes på den offentlige siden), tegnes resten likevel.
-  const safe = (f) => { try { f(); } catch (e) { console.warn('Tegning feilet:', e); } };
   dash.onData(() => {
-    safe(paintLegends);
-    safe(fillKpis);
-    safe(drawVekt);
-    safe(drawPrognose);
-    safe(() => drawBars('kcal-graf', 'kcal', { min: 2000, step: 500, ref: MAAL_KCAL }));
-    safe(() => drawBars('protein-graf', 'protein_g', { min: 150, step: 50, band: [PROT_LO, PROT_HI] }));
-    safe(drawKilder);
-    safe(fillStKpis);
-    safe(() => fillCalcKpis('#puls-kpis', 'polar_siste'));
-    safe(() => fillCalcKpis('#sovn-kpis', 'sovn_siste'));
-    safe(drawSovnkval);
-    safe(drawDognpuls);
-    safe(drawTrend);
-    safe(drawAkt);
-    safe(drawBakke);
-    safe(drawSplit);
-    safe(drawRute);
-    safe(draw3d);
-    safe(fillProfilTall);
-    safe(drawProfil);
-    safe(drawTur);
-    safe(drawLiv);
-    safe(fillTables);
+    paintLegends();
+    fillKpis();
+    drawVekt();
+    drawPrognose();
+    drawBars('kcal-graf', 'kcal', { min: 2000, step: 500, ref: MAAL_KCAL });
+    drawBars('protein-graf', 'protein_g', { min: 150, step: 50, band: [PROT_LO, PROT_HI] });
+    drawKilder();
+    fillStKpis();
+    fillCalcKpis('#puls-kpis', 'polar_siste');
+    fillCalcKpis('#sovn-kpis', 'sovn_siste');
+    drawSovnkval();
+    drawDognpuls();
+    drawTrend();
+    drawAkt();
+    drawBakke();
+    drawSplit();
+    drawRute();
+    draw3d();
+    fillProfilTall();
+    drawProfil();
+    drawTur();
+    drawLiv();
+    fillTables();
     if (!jumped && state(['vekt', 'mat', 'aktivitet', 'livvidde']) === 'ok') {
       jumped = true;
       try {
