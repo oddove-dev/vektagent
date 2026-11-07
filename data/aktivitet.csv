@@ -37,3 +37,4 @@ dato,type,km,tid,snitt_per_km,merknad
 2026-11-03,Hviledag,,,,"Ingen tur eller gåing (reisedag, oppgitt 05.11)"
 2026-11-04,Hviledag,,,,"Ingen tur eller gåing (kursdag på reise, oppgitt 05.11)"
 2026-11-05,Hviledag,,,,Ingen tur
+2026-11-06,Jogging,5.2,,,"Tid ikke oppgitt, standardtur (~36 min, anslag). Klokkas tall ikke hentet. Første trim etter tre dager uten"
